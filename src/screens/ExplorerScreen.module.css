@@ -1,0 +1,162 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+}
+
+.fileTreeContainer {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.fileActionsBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.fileActionsTitle {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.fileActions {
+  display: flex;
+  gap: 8px;
+}
+
+.fileAction {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fileAction:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.projectList {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.listHeader {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  padding: 16px 16px 8px;
+}
+
+.projectItem {
+  padding: 12px 16px;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.projectItem:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.projectName {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.projectPath {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+}
+
+.projectActions {
+  padding: 16px;
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.browseButton,
+.createButton {
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 12px;
+  cursor: pointer;
+  border: none;
+  text-align: center;
+}
+
+.createButton {
+  background-color: transparent;
+  border: 1px solid;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .fileActionsBar {
+    padding: 6px 12px;
+  }
+  
+  .fileActionsTitle {
+    font-size: 13px;
+  }
+  
+  .projectItem {
+    padding: 10px 12px;
+  }
+  
+  .projectName {
+    font-size: 15px;
+  }
+  
+  .projectActions {
+    padding: 12px;
+  }
+  
+  .browseButton,
+  .createButton {
+    padding: 10px 14px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 360px) {
+  .fileActionsBar {
+    padding: 4px 8px;
+  }
+  
+  .fileActionsTitle {
+    font-size: 12px;
+  }
+  
+  .projectName {
+    font-size: 14px;
+  }
+  
+  .projectPath {
+    font-size: 11px;
+  }
+  
+  .browseButton,
+  .createButton {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+}

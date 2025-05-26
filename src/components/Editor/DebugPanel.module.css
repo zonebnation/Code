@@ -1,0 +1,220 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid;
+  height: 200px;
+  overflow: hidden;
+  position: relative;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  min-height: 36px;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.button:hover:not(:disabled) {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.button:disabled {
+  cursor: default;
+}
+
+.divider {
+  width: 1px;
+  height: 16px;
+  margin: 0 4px;
+}
+
+.status {
+  font-size: 12px;
+}
+
+.actions {
+  display: flex;
+  gap: 4px;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.tab {
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  background: none;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+}
+
+.activeTab {
+  font-weight: 500;
+}
+
+.content {
+  flex: 1;
+  overflow: auto;
+  padding: 8px;
+}
+
+.console {
+  font-family: 'Fira Code', monospace;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 13px;
+  font-style: italic;
+  opacity: 0.7;
+}
+
+.message {
+  position: relative;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  line-height: 1.4;
+  padding: 2px 0;
+}
+
+.messageContent {
+  margin: 0;
+  padding: 0;
+  font-size: inherit;
+  font-family: inherit;
+}
+
+.variables {
+  height: 100%;
+}
+
+.variablesTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  font-family: 'Fira Code', monospace;
+}
+
+.variablesTable th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: normal;
+  padding: 4px 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.variableRow td {
+  padding: 4px 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .container {
+    height: 160px;
+  }
+  
+  .toolbar {
+    padding: 2px 6px;
+    min-height: 32px;
+  }
+  
+  .button {
+    padding: 3px;
+  }
+  
+  .tab {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  
+  .content {
+    padding: 6px;
+  }
+  
+  .console {
+    font-size: 11px;
+  }
+  
+  .variablesTable {
+    font-size: 11px;
+  }
+  
+  .variableRow td {
+    padding: 3px 6px;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 360px) {
+  .container {
+    height: 140px;
+  }
+  
+  .status {
+    font-size: 10px;
+    max-width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .tab span {
+    font-size: 10px;
+  }
+  
+  .console {
+    font-size: 10px;
+  }
+  
+  .variablesTable th,
+  .variablesTable td {
+    padding: 2px 4px;
+    font-size: 10px;
+  }
+}
+
+/* Landscape orientation on mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+  .container {
+    height: 120px;
+  }
+}

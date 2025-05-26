@@ -1,0 +1,82 @@
+.fileItem {
+  display: flex;
+  align-items: center;
+  height: 28px;
+  cursor: pointer;
+  position: relative;
+  border-radius: 4px;
+  margin: 1px 4px;
+  border: 2px solid transparent;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.fileItem:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.fileItem.selected {
+  font-weight: 500;
+}
+
+.fileItem.dragOver {
+  border-style: dashed;
+}
+
+.fileIcon {
+  width: 16px;
+  margin-right: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fileTypeIcon {
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fileName {
+  flex: 1;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.moreButton {
+  opacity: 0;
+  background: none;
+  border: none;
+  padding: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-left: 4px;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+}
+
+.fileItem:hover .moreButton {
+  opacity: 1;
+}
+
+.moreButton:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive styles for mobile */
+@media (max-width: 768px) {
+  .fileItem {
+    height: 36px; /* Larger touch target */
+  }
+  
+  /* Always show more button on mobile */
+  .moreButton {
+    opacity: 1;
+    padding: 5px; /* Larger touch target */
+  }
+}

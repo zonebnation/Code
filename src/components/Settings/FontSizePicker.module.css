@@ -1,0 +1,87 @@
+.container {
+  position: relative;
+}
+
+.pickerButton {
+  height: 36px;
+  border-radius: 4px;
+  border: 1px solid;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  min-width: 80px;
+  cursor: pointer;
+}
+
+.dropdown {
+  position: fixed;
+  z-index: 1000;
+  min-width: 200px;
+  border: 1px solid;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 12px;
+}
+
+.presetSizes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.sizeOption {
+  padding: 6px 10px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+}
+
+.customSizeSection {
+  padding-top: 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.customSizeLabel {
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.customSizeInput {
+  display: flex;
+  gap: 8px;
+}
+
+.customSizeInput input {
+  flex: 1;
+  height: 32px;
+  border-radius: 4px;
+  border: 1px solid;
+  padding: 0 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+}
+
+.applyButton {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 4px;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+}
+
+.applyButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error {
+  font-size: 12px;
+  margin-top: 4px;
+}

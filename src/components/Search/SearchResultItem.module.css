@@ -1,0 +1,40 @@
+.container {
+  display: flex;
+  align-items: flex-start;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-bottom: 2px;
+  cursor: pointer;
+}
+
+.container:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.lineNumber {
+  flex-shrink: 0;
+  width: 40px;
+  text-align: right;
+  padding-right: 8px;
+  font-family: 'Fira Code', monospace;
+  font-size: 12px;
+}
+
+.lineContent {
+  flex: 1;
+  font-family: 'Fira Code', monospace;
+  font-size: 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow: hidden;
+}
+
+.codePart {
+  white-space: pre;
+}
+
+.matchedText {
+  white-space: pre;
+  padding: 1px 2px;
+  border-radius: 2px;
+}

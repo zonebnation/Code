@@ -1,0 +1,88 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  border-top-width: 1px;
+  border-top-style: solid;
+  padding: 8px;
+  align-items: center;
+  overflow-x: auto;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+}
+
+.historyButtons {
+  display: flex;
+  flex-direction: row;
+  margin-right: 12px;
+}
+
+.historyButton {
+  padding: 8px;
+  margin-right: 4px;
+  border-radius: 4px;
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.historyButton:disabled {
+  cursor: not-allowed;
+}
+
+.historyButton:hover:not(:disabled) {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.keysContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.keysContainer::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.key {
+  height: 40px;
+  width: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 2px;
+  border-radius: 4px;
+  font-size: 18px;
+  font-family: 'Fira Code', monospace;
+  border: none;
+  cursor: pointer;
+}
+
+.key:hover {
+  opacity: 0.9;
+}
+
+.tabKey {
+  height: 40px;
+  padding: 0 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 8px;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+}
+
+.tabKey:hover {
+  opacity: 0.9;
+}

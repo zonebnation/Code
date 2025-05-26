@@ -1,0 +1,101 @@
+.container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 2px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.dropTarget {
+  border-style: dashed;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.action:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.fileList {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 20px;
+}
+
+.nestedFiles {
+  margin-left: 16px;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 20px;
+  text-align: center;
+}
+
+.emptyActions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.emptyAction {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  color: white;
+  cursor: pointer;
+  gap: 8px;
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 8px 12px;
+  }
+  
+  .title {
+    font-size: 13px;
+  }
+  
+  .action {
+    padding: 6px;  /* Larger touch target */
+  }
+  
+  .emptyAction {
+    padding: 10px 14px;  /* Larger touch target */
+  }
+}

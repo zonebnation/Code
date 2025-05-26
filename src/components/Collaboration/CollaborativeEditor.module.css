@@ -1,0 +1,69 @@
+.container {
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+
+.errorBanner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 16px;
+  z-index: 100;
+  text-align: center;
+  font-size: 14px;
+}
+
+.cursorsContainer {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  pointer-events: none;
+}
+
+.cursorLabel {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  white-space: nowrap;
+  opacity: 0.8;
+}
+
+/* Remote cursor styles */
+.remoteCursor {
+  position: relative;
+  width: 2px;
+  height: 18px;
+  background-color: var(--cursor-color, #3794FF);
+  z-index: 3;
+}
+
+.remoteCursor::after {
+  content: attr(data-username);
+  position: absolute;
+  top: -18px;
+  left: 0;
+  background-color: var(--cursor-color, #3794FF);
+  color: white;
+  padding: 2px 4px;
+  border-radius: 2px;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.remoteSelection {
+  background-color: var(--selection-color, rgba(55, 148, 255, 0.3));
+  position: absolute;
+}
+
+/* Hide cursor labels on small screens */
+@media (max-width: 768px) {
+  .cursorsContainer {
+    display: none;
+  }
+}

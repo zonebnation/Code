@@ -1,0 +1,348 @@
+.container {
+  height: 100%;
+  overflow: auto;
+  position: relative;
+  padding-bottom: 80px; /* Space for floating action buttons */
+  border: 2px solid transparent;
+  transition: border-color 0.2s ease;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+.dropTarget {
+  border-style: dashed;
+}
+
+.fileTreeHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  background-color: inherit;
+  z-index: 5;
+}
+
+.fileTreeTitle {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.fileTreeActions {
+  display: flex;
+  gap: 8px;
+}
+
+.fileTreeAction {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 4px;
+  min-width: 28px;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fileTreeAction:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.fileItem {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 32px;
+  cursor: pointer;
+  position: relative;
+  border-radius: 4px;
+  margin: 1px 4px;
+  border: 2px solid transparent;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.fileItem:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.fileItem.dragging {
+  opacity: 0.5;
+}
+
+.fileItem.dragOver {
+  border-style: dashed;
+}
+
+.fileIcon {
+  width: 16px;
+  margin-right: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fileTypeIcon {
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fileName {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.fileActions {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.fileItem:hover .fileActions {
+  opacity: 1;
+}
+
+.actionButton {
+  background: none;
+  border: none;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 50%;
+  min-width: 28px;
+  min-height: 28px;
+}
+
+.actionButton:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.contextMenu {
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 4px;
+  margin: 4px 16px 8px 0;
+  overflow: hidden;
+  z-index: 10;
+}
+
+.contextMenuItem {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  padding: 12px 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.contextMenuItem:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.divider {
+  height: 1px;
+  width: 100%;
+  margin: 4px 0;
+}
+
+.contextMenuIcon {
+  margin-right: 8px;
+  min-width: 16px;
+}
+
+/* Root context menu */
+.rootContextMenu {
+  position: absolute;
+  bottom: 80px;
+  right: 16px;
+  z-index: 10;
+}
+
+.rootContextMenuItem {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid;
+  background-color: white;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-height: 40px;
+}
+
+.rootContextMenuItem:hover {
+  opacity: 0.9;
+}
+
+/* Modal styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1000;
+}
+
+.modalContent {
+  width: 100%;
+  max-width: 400px;
+  border-radius: 8px;
+  border-width: 1px;
+  border-style: solid;
+  padding: 16px;
+}
+
+.modalTitle {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+}
+
+.modalMessage {
+  margin-bottom: 20px;
+}
+
+.modalInput {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid;
+  margin-bottom: 20px;
+  font-family: 'Inter', sans-serif;
+  min-height: 40px;
+}
+
+.modalButtons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.cancelButton, .confirmButton {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  min-height: 40px;
+  min-width: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cancelButton {
+  background: none;
+  border: 1px solid;
+}
+
+.confirmButton {
+  border: none;
+}
+
+/* Responsive styles for mobile */
+@media (max-width: 768px) {
+  .fileItem {
+    height: 40px; /* Larger touch target */
+  }
+  
+  .contextMenuItem {
+    padding: 12px 16px; /* Larger touch targets */
+    min-height: 48px;
+  }
+  
+  /* Always show action buttons on mobile */
+  .fileActions {
+    opacity: 1;
+  }
+  
+  .actionButton {
+    padding: 8px; /* Larger touch target */
+    min-height: 32px;
+    min-width: 32px;
+  }
+  
+  .modalContent {
+    width: 95%;
+    max-width: 350px;
+    padding: 16px;
+  }
+  
+  .modalTitle {
+    font-size: 16px;
+  }
+  
+  .modalMessage {
+    font-size: 14px;
+  }
+  
+  .cancelButton, .confirmButton {
+    min-height: 44px;
+    font-size: 14px;
+  }
+}
+
+/* For even smaller screens */
+@media (max-width: 375px) {
+  .fileName {
+    font-size: 13px;
+  }
+  
+  .fileItem {
+    padding-right: 4px; /* Smaller padding to fit more content */
+  }
+  
+  .fileTreeHeader {
+    padding: 8px 12px;
+  }
+  
+  .fileTreeTitle {
+    font-size: 13px;
+  }
+  
+  .modalContent {
+    width: 98%;
+    padding: 12px;
+  }
+  
+  .cancelButton, .confirmButton {
+    min-height: 44px;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}
+
+/* Fix for iOS safe areas */
+@supports (padding: max(0px)) {
+  .container {
+    padding-bottom: max(80px, calc(80px + env(safe-area-inset-bottom)));
+  }
+  
+  .rootContextMenu {
+    bottom: max(80px, calc(80px + env(safe-area-inset-bottom)));
+    right: max(16px, env(safe-area-inset-right));
+  }
+}

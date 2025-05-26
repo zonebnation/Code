@@ -1,0 +1,236 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 48px;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  position: relative;
+  width: 100%;
+}
+
+.projectInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  min-width: 0; /* Allow for proper text overflow */
+}
+
+.folderIcon {
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.projectName {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.publicBadge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 10px;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 18px;
+  flex: 1;
+}
+
+.browseButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
+}
+
+.menuButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
+}
+
+.menuDropdown {
+  position: absolute;
+  top: 48px;
+  right: 16px;
+  z-index: 100;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-width: 180px;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  padding: 12px 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.menuItem:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.menuItemIcon {
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.collaboratorsPanel {
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  max-height: 500px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.collaboratorsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.collaboratorsHeader h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  min-width: 28px;
+  min-height: 28px;
+}
+
+.closeButton:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.collaboratorsContent {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 450px;
+}
+
+/* Responsive styles for different device sizes */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 12px;
+    height: 44px;
+  }
+  
+  .projectName {
+    font-size: 14px;
+    max-width: 200px;
+  }
+  
+  .title {
+    font-size: 16px;
+  }
+  
+  .browseButton, .menuButton {
+    padding: 6px;
+    min-width: 32px;
+    min-height: 32px;
+  }
+  
+  .collaboratorsHeader {
+    padding: 8px 12px;
+  }
+  
+  .collaboratorsHeader h3 {
+    font-size: 14px;
+  }
+  
+  .closeButton {
+    min-width: 28px;
+    min-height: 28px;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 375px) {
+  .container {
+    padding: 0 8px;
+    height: 40px;
+  }
+  
+  .projectName {
+    font-size: 13px;
+    max-width: 150px;
+  }
+  
+  .title {
+    font-size: 15px;
+  }
+  
+  .publicBadge {
+    font-size: 9px;
+    padding: 1px 4px;
+  }
+  
+  .menuDropdown {
+    min-width: 160px;
+    right: 8px;
+  }
+  
+  .menuItem {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}
+
+/* Safe area insets */
+@supports (padding: max(0px)) {
+  .container {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+  
+  .menuDropdown {
+    right: max(16px, env(safe-area-inset-right));
+  }
+}

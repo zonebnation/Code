@@ -1,0 +1,197 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.content {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.tabBar {
+  display: flex;
+  justify-content: space-around;
+  height: 60px;
+  border-top-width: 1px;
+  border-top-style: solid;
+  width: 100%;
+}
+
+.tabItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 8px 0;
+  text-decoration: none;
+  min-width: 0; /* Allow shrinking below minimum content size */
+}
+
+.tabLabel {
+  font-size: 12px;
+  margin-top: 4px;
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.commandButtonContainer {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 900;
+}
+
+.commandButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.commandButton:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.searchButtonContainer {
+  position: fixed;
+  top: 12px;
+  right: 56px; /* Positioned next to the command button */
+  z-index: 900;
+}
+
+.searchButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.searchButton:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Responsive styles for different device sizes */
+
+/* Tablet adjustments */
+@media (max-width: 768px) {
+  .tabBar {
+    height: 56px;
+  }
+  
+  .tabItem {
+    padding: 6px 0;
+  }
+  
+  .tabLabel {
+    font-size: 11px;
+  }
+  
+  .commandButton, .searchButton {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+  }
+  
+  .commandButtonContainer {
+    top: 8px;
+    right: 8px;
+  }
+  
+  .searchButtonContainer {
+    top: 8px;
+    right: 48px;
+  }
+}
+
+/* Small mobile adjustments */
+@media (max-width: 360px) {
+  .tabBar {
+    height: 50px;
+  }
+  
+  .tabItem {
+    padding: 4px 0;
+  }
+  
+  .tabLabel {
+    font-size: 9px;
+    margin-top: 2px;
+  }
+  
+  .commandButton, .searchButton {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+  }
+  
+  .commandButtonContainer {
+    top: 6px;
+    right: 6px;
+  }
+  
+  .searchButtonContainer {
+    top: 6px;
+    right: 42px;
+  }
+}
+
+/* Landscape orientation on mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+  .tabBar {
+    height: 44px;
+  }
+  
+  .tabLabel {
+    margin-top: 2px;
+    font-size: 10px;
+  }
+  
+  .commandButtonContainer, .searchButtonContainer {
+    top: 4px;
+  }
+}
+
+/* Special handling for notched phones */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .tabBar {
+    padding-bottom: env(safe-area-inset-bottom);
+    height: calc(60px + env(safe-area-inset-bottom));
+  }
+  
+  @media (max-width: 768px) {
+    .tabBar {
+      height: calc(56px + env(safe-area-inset-bottom));
+    }
+  }
+  
+  @media (max-width: 360px) {
+    .tabBar {
+      height: calc(50px + env(safe-area-inset-bottom));
+    }
+  }
+}

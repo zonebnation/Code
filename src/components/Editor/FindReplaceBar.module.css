@@ -1,0 +1,107 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid;
+  padding: 8px 12px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.findSection, .replaceSection {
+  margin-bottom: 4px;
+}
+
+.replaceSection {
+  margin-top: 4px;
+}
+
+.inputGroup {
+  display: flex;
+  align-items: center;
+}
+
+.inputWrapper {
+  position: relative;
+  flex: 1;
+  max-width: 300px;
+  display: flex;
+  align-items: center;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.input {
+  flex: 1;
+  height: 32px;
+  border-radius: 4px;
+  border: none;
+  padding: 0 8px 0 32px;
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+}
+
+.matchInfo {
+  font-size: 12px;
+  margin: 0 12px;
+  white-space: nowrap;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  padding: 6px;
+  cursor: pointer;
+  margin-left: 2px;
+}
+
+.actionButton:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.actionButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.buttonText {
+  margin-left: 4px;
+  font-size: 13px;
+}
+
+.replaceAllButton {
+  padding: 6px 10px;
+}
+
+.options {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.optionLabel {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  margin-right: 16px;
+  cursor: pointer;
+}
+
+.optionLabel input {
+  margin-right: 4px;
+}

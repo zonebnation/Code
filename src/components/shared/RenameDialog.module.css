@@ -1,0 +1,134 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.dialog {
+  width: 100%;
+  max-width: 360px;
+  border-radius: 8px;
+  border: 1px solid;
+  overflow: hidden;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.icon {
+  margin-right: 12px;
+}
+
+.title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.errorBox {
+  margin: 16px 16px 0;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+form {
+  padding: 16px;
+}
+
+.inputContainer {
+  margin-bottom: 16px;
+}
+
+.label {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.input {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 4px;
+  border: 1px solid;
+  font-size: 14px;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #0078D7;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.cancelButton, .renameButton {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  min-height: 36px;
+}
+
+.cancelButton {
+  background: none;
+  border: 1px solid;
+}
+
+.renameButton {
+  border: none;
+  color: white;
+}
+
+.renameButton:disabled {
+  cursor: not-allowed;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .dialog {
+    max-width: 320px;
+  }
+  
+  .cancelButton, .renameButton {
+    padding: 10px 16px; /* Larger touch targets */
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 380px) {
+  .dialog {
+    max-width: none;
+  }
+  
+  .title {
+    font-size: 16px;
+  }
+  
+  .label {
+    font-size: 13px;
+  }
+}

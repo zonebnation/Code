@@ -1,0 +1,64 @@
+.container {
+  position: relative;
+}
+
+.pickerButton {
+  height: 36px;
+  border-radius: 4px;
+  border: 1px solid;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  min-width: 120px;
+  cursor: pointer;
+}
+
+.dropdown {
+  position: fixed;
+  z-index: 1000;
+  width: 240px;
+  border: 1px solid;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.themeList {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.themeItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  width: 100%;
+  text-align: left;
+  border: none;
+  border-bottom: 1px solid;
+  background: transparent;
+  cursor: pointer;
+}
+
+.themeItem:last-child {
+  border-bottom: none;
+}
+
+.themeItem:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.themeInfo {
+  flex: 1;
+}
+
+.themeName {
+  font-weight: 500;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.themeDescription {
+  font-size: 12px;
+}

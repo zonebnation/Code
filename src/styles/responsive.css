@@ -1,0 +1,301 @@
+/* Global responsive styles for the entire application */
+
+/* Base mobile-first styles */
+:root {
+  --primary-mobile-spacing: 8px;
+  --secondary-mobile-spacing: 16px;
+  --font-size-mobile-small: 12px;
+  --font-size-mobile-normal: 14px;
+  --font-size-mobile-large: 16px;
+  --border-radius-mobile: 8px;
+}
+
+/* Make sure inputs and buttons are easily tappable on touch devices */
+input, 
+button, 
+.button, 
+textarea, 
+select, 
+[role="button"] {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Improve tap target sizes on mobile */
+a, .link, label {
+  padding: 4px;
+}
+
+/* Ensure content is scalable and can zoom for accessibility */
+html {
+  text-size-adjust: 100%;
+}
+
+/* Responsive typography scale */
+h1 {
+  font-size: clamp(1.3rem, 5vw, 1.8rem);
+}
+
+h2 {
+  font-size: clamp(1.1rem, 4vw, 1.5rem);
+}
+
+h3 {
+  font-size: clamp(1rem, 3vw, 1.2rem);
+}
+
+h4, h5, h6 {
+  font-size: clamp(0.9rem, 2vw, 1rem);
+}
+
+/* Responsive containers */
+.container {
+  width: 100%;
+  padding: 0 16px;
+  margin: 0 auto;
+}
+
+.flex-container {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Make form elements more touch-friendly */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+/* Handle soft keyboard adjustments */
+@keyframes fix-height {
+  from { min-height: 100vh; }
+  to { min-height: -webkit-fill-available; }
+}
+
+@supports (-webkit-touch-callout: none) {
+  .full-height-ios {
+    animation: fix-height 9999s forwards;
+  }
+}
+
+/* Make images and videos responsive */
+img, video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Card layouts */
+.card {
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+/* Adjust spacing for modals */
+.modal-content {
+  width: 95%;
+  max-width: 500px;
+  padding: 16px;
+}
+
+/* Adjustments for lists */
+ul, ol {
+  padding-left: 24px;
+}
+
+/* Table responsiveness */
+table {
+  width: 100%;
+  overflow-x: auto;
+  display: block;
+}
+
+/* Scroll snap for certain containers */
+.snap-container {
+  scroll-snap-type: x mandatory;
+  overflow-x: auto;
+  display: flex;
+}
+
+.snap-item {
+  scroll-snap-align: start;
+  flex: 0 0 auto;
+}
+
+/* Tablets (600px and up) */
+@media only screen and (min-width: 600px) {
+  :root {
+    --primary-mobile-spacing: 16px;
+    --secondary-mobile-spacing: 24px;
+    --font-size-mobile-small: 14px;
+    --font-size-mobile-normal: 16px;
+    --font-size-mobile-large: 18px;
+  }
+  
+  h1 {
+    font-size: 1.8rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  h3 {
+    font-size: 1.3rem;
+  }
+  
+  .container {
+    padding: 0 24px;
+  }
+  
+  .flex-container {
+    flex-direction: row;
+  }
+  
+  .card {
+    padding: 24px;
+  }
+  
+  .modal-content {
+    padding: 24px;
+    width: 90%;
+  }
+}
+
+/* Large tablets and desktops (992px and up) */
+@media only screen and (min-width: 992px) {
+  :root {
+    --primary-mobile-spacing: 24px;
+    --secondary-mobile-spacing: 32px;
+  }
+  
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.7rem;
+  }
+
+  h3 {
+    font-size: 1.4rem;
+  }
+  
+  .container {
+    max-width: 960px;
+    padding: 0;
+  }
+  
+  .modal-content {
+    padding: 32px;
+    width: 80%;
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+  /* Make things more compact in landscape on small devices */
+  .modal-content {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  .compact-landscape {
+    padding: 8px;
+  }
+  
+  /* Adjust form layouts for landscape */
+  .form-landscape {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+}
+
+/* Notched iPhones and devices with safe areas */
+@supports (padding: max(0px)) {
+  .safe-area-padding {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+    padding-top: max(16px, env(safe-area-inset-top));
+  }
+  
+  .safe-area-bottom {
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+}
+
+/* Prevent pull-to-refresh on iOS */
+html, body {
+  overscroll-behavior-y: contain;
+}
+
+/* Improved accessibility for smaller screens */
+@media (max-width: 480px) {
+  * {
+    touch-action: manipulation;
+  }
+  
+  .visually-hidden-mobile {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+  }
+}
+
+/* Better handling of fixed positioning on iOS */
+@supports (-webkit-touch-callout: none) {
+  .ios-fixed {
+    position: fixed;
+    width: 100%;
+    left: 0;
+    right: 0;
+  }
+}
+
+/* Scaling improvements for very small screens */
+@media (max-width: 360px) {
+  /* Ensure touch targets are big enough */
+  button, [role="button"], a {
+    min-height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Reduce font size but maintain legibility */
+  body {
+    font-size: 14px;
+  }
+  
+  /* Ensure inputs are usable */
+  input, select, textarea {
+    font-size: 16px; /* Prevents iOS zoom on focus */
+  }
+  
+  /* Adjust padding for content */
+  .content-container {
+    padding: 8px;
+  }
+  
+  /* Make sure modals don't overflow */
+  .modal-dialog {
+    width: 95vw;
+    margin: 0 auto;
+  }
+}

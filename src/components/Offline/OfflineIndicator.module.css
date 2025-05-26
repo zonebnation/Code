@@ -1,0 +1,126 @@
+.container {
+  position: fixed;
+  bottom: 70px;
+  right: 16px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.indicator {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+  gap: 6px;
+  cursor: pointer;
+  animation: slideIn 0.3s ease;
+}
+
+.indicator.success {
+  animation: pulse 2s ease;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  10% { transform: scale(1.1); }
+  20% { transform: scale(1); }
+  100% { transform: scale(1); }
+}
+
+.syncingIcon {
+  animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.syncButton {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 16px;
+  border: none;
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+  gap: 6px;
+  cursor: pointer;
+  animation: fadeIn 0.3s ease;
+}
+
+.syncButton:disabled {
+  cursor: not-allowed;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.toggleOptions {
+  position: absolute;
+  bottom: 40px;
+  right: 0;
+  border-radius: 8px;
+  border: 1px solid;
+  overflow: hidden;
+  min-width: 200px;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.toggleOption {
+  padding: 10px 16px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background-color 0.2s ease;
+}
+
+.toggleOption:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Media queries for responsive design */
+@media (max-width: 768px) {
+  .container {
+    bottom: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .indicator {
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+  
+  .syncButton {
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+  
+  .toggleOptions {
+    min-width: 180px;
+  }
+}

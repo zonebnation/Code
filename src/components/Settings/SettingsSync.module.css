@@ -1,0 +1,239 @@
+.container {
+  padding: 24px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 12px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid;
+}
+
+.header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.settingItem {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.settingInfo {
+  flex: 1;
+  margin-right: 16px;
+  min-width: 200px;
+}
+
+.settingLabel {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.settingDescription {
+  font-size: 14px;
+}
+
+.settingControl {
+  flex-shrink: 0;
+}
+
+/* Switch styles */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 24px;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  border-radius: 50%;
+  transition: .4s;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.syncStatus {
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.syncStatusItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.syncStatusLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.syncStatusValue {
+  font-size: 14px;
+}
+
+.storageBar {
+  height: 8px;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.storageBarFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.syncButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 4px;
+  border: none;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.syncButton:disabled {
+  cursor: not-allowed;
+}
+
+.spinningIcon {
+  animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.infoBox {
+  padding: 16px;
+  border-radius: 8px;
+  display: flex;
+  gap: 12px;
+  line-height: 1.5;
+}
+
+.infoBox p {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+}
+
+.infoBox p:last-child {
+  margin-bottom: 0;
+}
+
+/* Media queries for responsive design */
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+  
+  .settingItem {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .settingInfo {
+    margin-right: 0;
+    margin-bottom: 8px;
+    min-width: 0;
+    width: 100%;
+  }
+  
+  .settingControl {
+    align-self: flex-start;
+  }
+  
+  .syncStatusItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .infoBox {
+    flex-direction: column;
+    padding: 12px;
+  }
+}
+
+/* Small screen adjustments */
+@media (max-width: 375px) {
+  .container {
+    padding: 12px;
+  }
+  
+  .header h3 {
+    font-size: 14px;
+  }
+  
+  .settingLabel {
+    font-size: 14px;
+  }
+  
+  .settingDescription, 
+  .syncStatusLabel,
+  .syncStatusValue {
+    font-size: 12px;
+  }
+  
+  .syncButton {
+    width: 100%;
+    padding: 8px 12px;
+  }
+}

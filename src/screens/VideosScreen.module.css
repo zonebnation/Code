@@ -1,0 +1,623 @@
+/* Main container */
+.container {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background-color: #000;
+}
+
+/* Reels container with vertical snap scrolling */
+.reelsContainer {
+  height: 100%;
+  width: 100%;
+  scroll-snap-type: y mandatory;
+  overflow-y: scroll;
+  scrollbar-width: none; /* Hide scrollbar for Firefox */
+  -ms-overflow-style: none; /* Hide scrollbar for IE/Edge */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+.reelsContainer::-webkit-scrollbar {
+  display: none; /* Hide scrollbar for Chrome/Safari/Opera */
+}
+
+/* Individual reel item */
+.reelItem {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always; /* Force stopping at each snap point */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Video container */
+.videoContainer {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Video element */
+.video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Thumbnail that shows before video plays */
+.videoThumbnail {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+  transition: opacity 0.3s ease;
+}
+
+/* Loading overlay */
+.loadingOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 10;
+}
+
+/* Loading spinner */
+.loader {
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top: 4px solid #fff;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Error overlay */
+.errorOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 10;
+  color: white;
+  text-align: center;
+  padding: 20px;
+}
+
+.errorOverlay p {
+  margin: 16px 0;
+  font-size: 16px;
+  max-width: 80%;
+}
+
+/* Retry button */
+.retryButton {
+  margin-top: 16px;
+  padding: 10px 20px;
+  background-color: #ff4757;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  min-height: 44px; /* Better touch target */
+}
+
+.retryButton:hover {
+  background-color: #ff6b81;
+}
+
+/* Play/pause overlay */
+.playPauseOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 5;
+}
+
+.playPauseOverlay:active {
+  opacity: 0.7 !important;
+}
+
+/* Video controls */
+.videoControls {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  z-index: 20;
+}
+
+.muteButton {
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  touch-action: manipulation;
+}
+
+.muteButton:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+/* User info section */
+.userInfo {
+  position: absolute;
+  bottom: 80px;
+  left: 16px;
+  max-width: 70%;
+  z-index: 20;
+  padding-right: 16px;
+}
+
+.userHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.userAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+}
+
+.username {
+  color: #FFFFFF;
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.description {
+  color: #FFFFFF;
+  margin-bottom: 12px;
+  font-size: 14px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  word-wrap: break-word;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.tag {
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.actionButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  color: white;
+  gap: 8px;
+  max-width: 100%;
+  min-height: 44px; /* Better touch target */
+}
+
+/* Side buttons for interactions */
+.sideButtons {
+  position: absolute;
+  right: 16px;
+  bottom: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  z-index: 20;
+}
+
+.iconButton {
+  background: transparent;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  min-height: 44px; /* Better touch target */
+}
+
+.iconCount {
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* Progress indicator dots */
+.indicators {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 30;
+}
+
+.indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.indicatorActive {
+  background-color: white;
+  height: 20px;
+  border-radius: 10px;
+}
+
+/* Navigation buttons */
+.verticalNav {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  z-index: 25;
+  left: 16px;
+  pointer-events: none; /* Allows clicking through to the video */
+}
+
+.navButton {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  pointer-events: auto; /* Enable clicks on the button */
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+.navButton:hover, .navButton:active {
+  opacity: 1;
+}
+
+.navButtonDisabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* Media query for tablets and medium-sized screens */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .userInfo {
+    bottom: 100px;
+    max-width: 60%;
+  }
+  
+  .sideButtons {
+    right: 24px;
+    bottom: 120px;
+  }
+  
+  .actionButton {
+    padding: 10px 16px;
+    font-size: 15px;
+  }
+  
+  .description {
+    font-size: 15px;
+    -webkit-line-clamp: 4;
+  }
+  
+  .username {
+    font-size: 20px;
+  }
+}
+
+/* Media query for desktop */
+@media (min-width: 1025px) {
+  .reelItem {
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  
+  .videoContainer {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    height: calc(100% - 40px);
+  }
+}
+
+/* Media query for mobile landscape */
+@media (max-height: 500px) and (orientation: landscape) {
+  .userInfo {
+    bottom: 60px;
+    left: 120px; /* Move info to make room for side buttons */
+    max-width: 50%;
+  }
+  
+  .sideButtons {
+    bottom: auto;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 24px;
+  }
+  
+  .description {
+    -webkit-line-clamp: 2;
+  }
+  
+  .tags {
+    margin-bottom: 8px;
+  }
+  
+  .userAvatar {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .actionButtons {
+    flex-direction: row;
+  }
+  
+  .actionButton {
+    padding: 6px 10px;
+  }
+  
+  .videoControls {
+    bottom: 10px;
+    right: 10px;
+  }
+}
+
+/* Media query for small mobile phones */
+@media (max-width: 375px) {
+  .userInfo {
+    bottom: 70px;
+    left: 10px;
+    max-width: 65%;
+  }
+  
+  .sideButtons {
+    right: 8px;
+    bottom: 80px;
+    gap: 15px;
+  }
+  
+  .description {
+    font-size: 12px;
+    -webkit-line-clamp: 2;
+    margin-bottom: 8px;
+  }
+  
+  .userAvatar {
+    width: 30px;
+    height: 30px;
+    margin-right: 8px;
+  }
+  
+  .username {
+    font-size: 14px;
+  }
+  
+  .tag {
+    padding: 3px 6px;
+    font-size: 10px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+  }
+  
+  .actionButton {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+  
+  .muteButton {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .indicators {
+    right: 5px;
+  }
+  
+  .indicator {
+    width: 4px;
+    height: 4px;
+  }
+  
+  .indicatorActive {
+    height: 14px;
+  }
+  
+  .iconButton {
+    gap: 2px;
+  }
+  
+  .iconCount {
+    font-size: 10px;
+  }
+  
+  .navButton {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* Media query for very small devices */
+@media (max-width: 320px) {
+  .userInfo {
+    bottom: 65px;
+    left: 8px;
+    max-width: 60%;
+  }
+  
+  .sideButtons {
+    right: 5px;
+    gap: 12px;
+  }
+  
+  .username {
+    font-size: 12px;
+  }
+  
+  .description {
+    font-size: 11px;
+    -webkit-line-clamp: 2;
+  }
+  
+  .actionButton {
+    padding: 5px 8px;
+    font-size: 10px;
+    min-height: 36px;
+  }
+  
+  .actionButton span {
+    display: none; /* Hide text on very small screens */
+  }
+  
+  .tag {
+    padding: 2px 4px;
+    font-size: 9px;
+  }
+  
+  .userAvatar {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .iconButton svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .iconCount {
+    font-size: 9px;
+  }
+  
+  .muteButton {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .navButton {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* Media query for notched iPhones */
+@supports (padding: max(0px)) {
+  .userInfo {
+    left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+  
+  .sideButtons {
+    right: max(16px, env(safe-area-inset-right));
+  }
+  
+  .videoControls {
+    right: max(20px, env(safe-area-inset-right));
+    bottom: max(20px, env(safe-area-inset-bottom));
+  }
+  
+  .indicators {
+    right: max(10px, env(safe-area-inset-right));
+  }
+}
+
+/* Fixes for different aspect ratios */
+@media (min-aspect-ratio: 16/9) {
+  .video {
+    width: 100%;
+    height: auto;
+  }
+}
+
+@media (max-aspect-ratio: 9/16) {
+  .video {
+    width: auto;
+    height: 100%;
+  }
+}
+
+/* Special media query for foldable devices */
+@media (min-width: 600px) and (max-width: 800px) and (min-height: 700px) {
+  .userInfo {
+    max-width: 65%;
+  }
+  
+  .actionButton {
+    font-size: 14px;
+  }
+}

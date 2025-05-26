@@ -1,0 +1,139 @@
+.container {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.mainButton {
+  width: 48px;
+  height: 48px;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border: none;
+  cursor: pointer;
+}
+
+.actionsMenu {
+  position: absolute;
+  bottom: 60px;
+  right: 0;
+  border-radius: 8px;
+  border-width: 1px;
+  border-style: solid;
+  padding: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.actionItem {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+
+.actionItem:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.actionIcon {
+  margin-right: 12px;
+}
+
+.actionText {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1000;
+}
+
+.modalContent {
+  width: 100%;
+  max-width: 400px;
+  border-radius: 8px;
+  border-width: 1px;
+  border-style: solid;
+  padding: 16px;
+}
+
+.modalHeader {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.modalTitle {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 18px;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.input {
+  height: 40px;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 4px;
+  padding: 0 8px;
+  margin-bottom: 16px;
+  font-family: 'Inter', sans-serif;
+  width: 100%;
+}
+
+.modalActions {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+}
+
+.button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  margin-left: 8px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.cancelButton {
+  background: none;
+  border-width: 1px;
+  border-style: solid;
+}
+
+.createButton {
+  border: none;
+}
