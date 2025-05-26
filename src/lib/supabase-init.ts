@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase client with fallback values for development
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mjbhockriytxstmwffjy.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsImtpZCI6InRpSHovQmJ6b2k1cytwS2hiR1kzeCIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qYmhvY2tyaXl0eHN0bXdmZmp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTI4MDQ5MzYsImV4cCI6MjAyODM4MDkzNn0.5EFB0B6PWuNAcpNI9FKsS-wTchJR-ZRznVx4mVlCGhQ';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qYmhvY2tyaXl0eHN0bXdmZmp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMzUxNTAsImV4cCI6MjA2MzYxMTE1MH0.DIwmXTjsGcS1I1-PDAewTHUMCJuRelEtso5tNRhwgzY';
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {

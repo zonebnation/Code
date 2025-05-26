@@ -1,16 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase client with fallback values for development
+// Initialize Supabase client
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Supabase credentials are missing in environment variables.');
+  console.error('Supabase credentials are missing in environment variables. Please make sure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are properly set in your .env file.');
 }
 
 export const supabase = createClient(
-  supabaseUrl || 'https://mjbhockriytxstmwffjy.supabase.co',
-  supabaseAnonKey || 'eyJhbGciOiJIUzI1NiIsImtpZCI6InRpSHovQmJ6b2k1cytwS2hiR1kzeCIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qYmhvY2tyaXl0eHN0bXdmZmp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTI4MDQ5MzYsImV4cCI6MjAyODM4MDkzNn0.5EFB0B6PWuNAcpNI9FKsS-wTchJR-ZRznVx4mVlCGhQ',
+  supabaseUrl || '',
+  supabaseAnonKey || '',
   {
     auth: {
       autoRefreshToken: true,
@@ -24,6 +24,12 @@ export const supabase = createClient(
 // Initialize storage buckets - only check if they exist, don't try to create them
 export const initializeStorage = async () => {
   try {
+    // Check if we have proper credentials before attempting to access storage
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error("Missing Supabase credentials. Cannot initialize storage.");
+      return;
+    }
+    
     console.log("Checking storage buckets");
     const { data: buckets, error } = await supabase.storage.listBuckets();
     
@@ -47,12 +53,14 @@ export const initializeStorage = async () => {
   }
 };
 
-// Initialize on load
-setTimeout(() => {
-  initializeStorage().catch(err => {
-    console.error("Failed to initialize storage:", err);
-  });
-}, 1000);
+// Initialize on load - but only if we have credentials
+if (supabaseUrl && supabaseAnonKey) {
+  setTimeout(() => {
+    initializeStorage().catch(err => {
+      console.error("Failed to initialize storage:", err);
+    });
+  }, 1000);
+}
 
 export type Profile = {
   id: string;
