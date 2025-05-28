@@ -3,7 +3,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { useProject } from '../../context/ProjectContext';
 import { Search as SearchIcon, X, ArrowLeft } from 'lucide-react';
 import SearchService, { SearchOptions } from '../../services/SearchService';
-import { FileSearchResult } from '../../types/editor';
+import { FileSearchResult, SearchMatch } from '../../types/editor';
 import SearchResultItem from './SearchResultItem';
 import styles from './GlobalSearch.module.css';
 
@@ -192,7 +192,7 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ onClose, onFileSelect }) =>
               <span className={styles.matchCount}>{result.matches.length} matches</span>
             </div>
             
-            {result.matches.map((match, i) => (
+            {result.matches.map((match: SearchMatch, i: number) => (
               <SearchResultItem
                 key={`${result.fileId}-${match.lineNumber}-${i}`}
                 match={match}

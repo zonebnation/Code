@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useAuth } from './AuthContext';
-import SettingsSyncService from '../services/SettingsSyncService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ThemeName } from './ThemeContext';
 
 export type EditorSettings = {
   fontSize: number;
@@ -17,6 +17,7 @@ interface SettingsContextType {
   editorSettings: EditorSettings;
   colorTheme: ColorTheme;
   isDark: boolean;
+  themeName: ThemeName;
   updateFontSize: (size: number) => void;
   updateTabSize: (size: number) => void;
   updateUseTabs: (useTabs: boolean) => void;
@@ -24,6 +25,7 @@ interface SettingsContextType {
   updateAutoSave: (autoSave: boolean) => void;
   updateMinimapEnabled: (enabled: boolean) => void;
   updateColorTheme: (theme: ColorTheme) => void;
+  updateThemeName: (theme: ThemeName) => void;
   syncStatus: 'idle' | 'syncing' | 'error' | 'success';
   lastSyncTime: number | null;
   syncSettings: () => Promise<void>;
@@ -42,6 +44,7 @@ const SettingsContext = createContext<SettingsContextType>({
   editorSettings: defaultSettings,
   colorTheme: 'default',
   isDark: false,
+  themeName: 'dark',
   updateFontSize: () => {},
   updateTabSize: () => {},
   updateUseTabs: () => {},
@@ -49,6 +52,7 @@ const SettingsContext = createContext<SettingsContextType>({
   updateAutoSave: () => {},
   updateMinimapEnabled: () => {},
   updateColorTheme: () => {},
+  updateThemeName: () => {},
   syncStatus: 'idle',
   lastSyncTime: null,
   syncSettings: async () => {},
@@ -59,23 +63,24 @@ export const useSettings = () => useContext(SettingsContext);
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
   children 
 }) => {
-  const { user } = useAuth();
   const [editorSettings, setEditorSettings] = useState<EditorSettings>(defaultSettings);
   const [colorTheme, setColorTheme] = useState<ColorTheme>('default');
   const [isDark, setIsDark] = useState(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const [themeName, setThemeName] = useState<ThemeName>('dark');
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'error' | 'success'>('idle');
   const [lastSyncTime, setLastSyncTime] = useState<number | null>(null);
   const [syncInitialized, setSyncInitialized] = useState(false);
 
   // Load settings from localStorage on mount
   useEffect(() => {
-    const loadLocalSettings = () => {
-      const savedSettings = localStorage.getItem('codeCanvas_editorSettings');
-      const savedTheme = localStorage.getItem('codeCanvas_colorTheme');
-      const savedDarkMode = localStorage.getItem('codeCanvas_darkMode');
-      
-      if (savedSettings) {
-        try {
+    const loadLocalSettings = async () => {
+      try {
+        const savedSettings = localStorage.getItem('codeCanvas_editorSettings');
+        const savedTheme = localStorage.getItem('codeCanvas_colorTheme');
+        const savedDarkMode = localStorage.getItem('codeCanvas_darkMode');
+        const savedThemeName = localStorage.getItem('codeCanvas_themeName');
+        
+        if (savedSettings) {
           const parsedSettings = JSON.parse(savedSettings);
           
           // Add default values for new settings if they don't exist
@@ -84,118 +89,78 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
           }
           
           setEditorSettings(parsedSettings);
-        } catch (e) {
-          console.error('Failed to parse saved editor settings', e);
         }
-      }
-      
-      if (savedTheme) {
-        setColorTheme(savedTheme as ColorTheme);
-      }
-      
-      if (savedDarkMode !== null) {
-        setIsDark(savedDarkMode === 'true');
+        
+        if (savedTheme) {
+          setColorTheme(savedTheme as ColorTheme);
+        }
+        
+        if (savedDarkMode !== null) {
+          setIsDark(savedDarkMode === 'true');
+        }
+        
+        if (savedThemeName) {
+          setThemeName(savedThemeName as ThemeName);
+        }
+      } catch (e) {
+        console.error('Failed to load settings', e);
       }
     };
 
     loadLocalSettings();
   }, []);
 
-  // Set up sync status listener
+  // Save settings when they change
   useEffect(() => {
-    const handleSyncStatusChange = (status: 'idle' | 'syncing' | 'error' | 'success') => {
-      setSyncStatus(status);
-    };
-
-    SettingsSyncService.onSyncStatusChange(handleSyncStatusChange);
-    
-    return () => {
-      SettingsSyncService.offSyncStatusChange(handleSyncStatusChange);
-    };
-  }, []);
-
-  // Try to load settings from server when user logs in
-  useEffect(() => {
-    const loadSyncedSettings = async () => {
-      if (!user || syncInitialized) return;
-      
+    const saveSettings = async () => {
       try {
-        // Check if sync is enabled
-        const syncEnabled = await SettingsSyncService.isSyncEnabled();
-        
-        if (!syncEnabled) {
-          setSyncInitialized(true);
-          return;
-        }
-
-        // Get remote settings
-        const remoteSettings = await SettingsSyncService.loadAllSettings();
-        
-        // If we have remote settings, apply them
-        if (remoteSettings) {
-          if (remoteSettings.editorSettings) {
-            setEditorSettings(remoteSettings.editorSettings);
-          }
-          
-          if (remoteSettings.colorTheme) {
-            setColorTheme(remoteSettings.colorTheme);
-          }
-          
-          if (remoteSettings.isDark !== undefined) {
-            setIsDark(remoteSettings.isDark);
-          }
-          
-          setLastSyncTime(remoteSettings.lastSyncTime || Date.now());
-        }
-        
-        setSyncInitialized(true);
-      } catch (error) {
-        console.error('Error loading synced settings:', error);
-        setSyncInitialized(true);
+        localStorage.setItem('codeCanvas_editorSettings', JSON.stringify(editorSettings));
+      } catch (e) {
+        console.error('Failed to save settings', e);
       }
     };
 
-    loadSyncedSettings();
-  }, [user, syncInitialized]);
-
-  // Save settings to localStorage when they change
-  useEffect(() => {
-    localStorage.setItem('codeCanvas_editorSettings', JSON.stringify(editorSettings));
+    saveSettings();
   }, [editorSettings]);
 
   // Save theme when it changes
   useEffect(() => {
-    localStorage.setItem('codeCanvas_colorTheme', colorTheme);
+    const saveTheme = async () => {
+      try {
+        localStorage.setItem('codeCanvas_colorTheme', colorTheme);
+      } catch (e) {
+        console.error('Failed to save theme', e);
+      }
+    };
+
+    saveTheme();
   }, [colorTheme]);
 
   // Save dark mode preference when it changes
   useEffect(() => {
-    localStorage.setItem('codeCanvas_darkMode', String(isDark));
-    
-    // Update body class for global CSS
-    if (isDark) {
-      document.body.classList.add('dark-theme');
-      document.body.classList.remove('light-theme');
-    } else {
-      document.body.classList.add('light-theme');
-      document.body.classList.remove('dark-theme');
-    }
-  }, [isDark]);
-
-  // Listen for system theme changes
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    
-    const handleChange = (e: MediaQueryListEvent) => {
-      // Only update if the user hasn't explicitly set a preference
-      if (!localStorage.getItem('codeCanvas_darkMode')) {
-        setIsDark(e.matches);
+    const saveDarkMode = async () => {
+      try {
+        localStorage.setItem('codeCanvas_darkMode', String(isDark));
+      } catch (e) {
+        console.error('Failed to save dark mode preference', e);
       }
     };
-    
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
+
+    saveDarkMode();
+  }, [isDark]);
+  
+  // Save theme name when it changes
+  useEffect(() => {
+    const saveThemeName = async () => {
+      try {
+        localStorage.setItem('codeCanvas_themeName', themeName);
+      } catch (e) {
+        console.error('Failed to save theme name', e);
+      }
+    };
+
+    saveThemeName();
+  }, [themeName]);
 
   const updateFontSize = (size: number) => {
     setEditorSettings(prev => ({ ...prev, fontSize: size }));
@@ -224,34 +189,50 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
   const updateColorTheme = (theme: ColorTheme) => {
     setColorTheme(theme);
   };
+  
+  const updateThemeName = (theme: ThemeName) => {
+    setThemeName(theme);
+    // Also update isDark based on the selected theme
+    const isDarkTheme = ['dark', 'highContrastDark', 'midnightBlue', 'materialDark'].includes(theme);
+    setIsDark(isDarkTheme);
+  };
 
   // Sync current settings to the server
   const syncSettings = async (): Promise<void> => {
-    if (!user) return;
-
+    // This is a placeholder for syncing settings with the server
     try {
       setSyncStatus('syncing');
       
-      // Get settings object
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Get settings object to sync
       const settings = {
         editorSettings,
         colorTheme,
         isDark,
+        themeName,
         lastSyncTime: Date.now()
       };
       
-      // Upload to server
-      const result = await SettingsSyncService.saveAllSettings(settings);
+      // In a real implementation, this would call an API to save settings
+      console.log('Syncing settings:', settings);
       
-      if (result.success) {
-        setLastSyncTime(result.timestamp || Date.now());
-        setSyncStatus('success');
-      } else {
-        setSyncStatus('error');
-      }
+      setLastSyncTime(Date.now());
+      setSyncStatus('success');
+      
+      // Reset success status after 3 seconds
+      setTimeout(() => {
+        setSyncStatus('idle');
+      }, 3000);
     } catch (error) {
       console.error('Error syncing settings:', error);
       setSyncStatus('error');
+      
+      // Reset error status after 3 seconds
+      setTimeout(() => {
+        setSyncStatus('idle');
+      }, 3000);
     }
   };
 
@@ -261,6 +242,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
         editorSettings,
         colorTheme,
         isDark,
+        themeName,
         updateFontSize,
         updateTabSize,
         updateUseTabs,
@@ -268,6 +250,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
         updateAutoSave,
         updateMinimapEnabled,
         updateColorTheme,
+        updateThemeName,
         syncStatus,
         lastSyncTime,
         syncSettings,

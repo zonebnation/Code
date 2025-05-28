@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { User, Mail, Camera, Check } from 'lucide-react';
-import { supabase } from '../../services/supabase';
+import { supabase } from '../../lib/supabase-init';
 import { useNavigate } from 'react-router-dom';
 
 const ProfileForm: React.FC = () => {
@@ -262,7 +262,7 @@ const ProfileForm: React.FC = () => {
         </button>
       </form>
       
-      <style jsx>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .profile-form {
           width: 100%;
           max-width: 480px;
@@ -415,7 +415,7 @@ const ProfileForm: React.FC = () => {
             height: 80px;
           }
         }
-      `}</style>
+      `}} />
     </div>
   );
 };

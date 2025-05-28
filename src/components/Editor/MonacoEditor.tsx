@@ -1,14 +1,15 @@
 import React, { useRef, useEffect, useState } from 'react';
-import * as monaco from 'monaco-editor';
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import { useTheme } from '../../context/ThemeContext';
 import { useSettings } from '../../context/SettingsContext';
-import { Save, Search, Bug, Play, Pause } from 'lucide-react';
+import { Save, Search, Bug, Play, Pause, AlignLeft, Zap } from 'lucide-react';
 import { useProject } from '../../context/ProjectContext';
 import { useAuth } from '../../context/AuthContext';
 import FindReplaceBar, { FindOptions } from './FindReplaceBar';
 import DebugPanel from './DebugPanel';
 import CollaborativeCursors from './CollaborativeCursors';
 import CollaborationService from '../../services/CollaborationService';
+import AICompletionService from '../../services/AICompletionService';
 import debuggerService, { BreakpointLocation } from '../../services/DebuggerService';
 import { CursorData } from '../../types/collaboration';
 import styles from './MonacoEditor.module.css';
@@ -19,13 +20,15 @@ interface MonacoEditorProps {
   language: string;
   onChange: (text: string) => void;
   isCollaborative?: boolean;
+  readOnly?: boolean;
 }
 
 const MonacoEditor: React.FC<MonacoEditorProps> = ({ 
   code, 
   language, 
   onChange,
-  isCollaborative = false
+  isCollaborative = false,
+  readOnly = false
 }) => {
   const { colors, isDark } = useTheme();
   const { currentFile, updateFileContent, saveFile, hasUnsavedChanges, currentProject } = useProject();
@@ -39,6 +42,7 @@ const MonacoEditor: React.FC<MonacoEditorProps> = ({
   const [breakpoints, setBreakpoints] = useState<BreakpointLocation[]>([]);
   const [isDebugging, setIsDebugging] = useState(false);
   const [remoteCursors, setRemoteCursors] = useState<CursorData[]>([]);
+  const [showAISuggestions, setShowAISuggestions] = useState(true);
   
   const editorContainerRef = useRef<HTMLDivElement | null>(null);
   const cursorUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -96,7 +100,7 @@ const MonacoEditor: React.FC<MonacoEditorProps> = ({
         theme: isDark ? 'code-canvas-dark' : 'code-canvas-light',
         automaticLayout: true,
         minimap: {
-          enabled: false // Disable minimap for better mobile performance
+          enabled: editorSettings.minimapEnabled
         },
         fontSize: editorSettings.fontSize,
         tabSize: editorSettings.tabSize,
@@ -112,7 +116,8 @@ const MonacoEditor: React.FC<MonacoEditorProps> = ({
           horizontal: 'visible',
           verticalScrollbarSize: 10,
           horizontalScrollbarSize: 10
-        }
+        },
+        readOnly: readOnly
       });
 
       setEditor(newEditor);
@@ -146,7 +151,7 @@ const MonacoEditor: React.FC<MonacoEditorProps> = ({
       });
 
       // Add breakpoint handling
-      newEditor.onMouseDown((e) => {
+      newEditor.onMouseDown((e: monaco.editor.IEditorMouseEvent) => {
         if (e.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
           const lineNumber = e.target.position?.lineNumber;
           if (lineNumber) {
@@ -157,7 +162,7 @@ const MonacoEditor: React.FC<MonacoEditorProps> = ({
       
       // Add cursor position change listener for collaborative editing
       if (isCollaborative && user && currentProject && currentFile) {
-        newEditor.onDidChangeCursorPosition((e) => {
+        newEditor.onDidChangeCursorPosition((e: monaco.editor.ICursorPositionChangedEvent) => {
           // Debounce cursor updates to avoid flooding the server
           if (cursorUpdateTimeoutRef.current) {
             clearTimeout(cursorUpdateTimeoutRef.current);
@@ -184,6 +189,11 @@ const MonacoEditor: React.FC<MonacoEditorProps> = ({
           }, 100); // 100ms debounce
         });
       }
+
+      // Set up AI code completion provider
+      if (showAISuggestions && !readOnly) {
+        setupAICompletionProvider(newEditor);
+      }
     }
 
     // Cleanup
@@ -197,6 +207,108 @@ const MonacoEditor: React.FC<MonacoEditorProps> = ({
       }
     };
   }, [colors, isDark, editorSettings.fontSize]);
+
+  // Set up AI code completion provider
+  const setupAICompletionProvider = (editor: monaco.editor.IStandaloneCodeEditor) => {
+    monaco.languages.registerCompletionItemProvider('javascript', {
+      triggerCharacters: ['.', '(', '{', '[', '"', "'", ' '],
+      provideCompletionItems: async (model: monaco.editor.ITextModel, position: monaco.Position) => {
+        const wordAtPosition = model.getWordAtPosition(position);
+        const lineContent = model.getLineContent(position.lineNumber);
+        const cursorIndex = model.getOffsetAt(position);
+        const lineUntilCursor = lineContent.substring(0, position.column - 1);
+        const prefix = wordAtPosition?.word || '';
+        
+        // Get completions from the AI service
+        const result = await AICompletionService.getCompletions(
+          model.getValue(),
+          cursorIndex,
+          language,
+          prefix
+        );
+        
+        // Convert to Monaco completion items
+        return {
+          suggestions: result.suggestions.map(item => ({
+            label: item.label,
+            kind: mapCompletionKind(item.kind),
+            documentation: item.documentation,
+            detail: item.detail,
+            insertText: item.insertText,
+            range: {
+              startLineNumber: position.lineNumber,
+              endLineNumber: position.lineNumber,
+              startColumn: wordAtPosition ? position.column - prefix.length : position.column,
+              endColumn: position.column
+            },
+            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
+          }))
+        };
+      }
+    });
+
+    // Also register for TypeScript
+    monaco.languages.registerCompletionItemProvider('typescript', {
+      triggerCharacters: ['.', '(', '{', '[', '"', "'", ' '],
+      provideCompletionItems: async (model: monaco.editor.ITextModel, position: monaco.Position) => {
+        const wordAtPosition = model.getWordAtPosition(position);
+        const lineContent = model.getLineContent(position.lineNumber);
+        const cursorIndex = model.getOffsetAt(position);
+        const lineUntilCursor = lineContent.substring(0, position.column - 1);
+        const prefix = wordAtPosition?.word || '';
+        
+        // Get completions from the AI service
+        const result = await AICompletionService.getCompletions(
+          model.getValue(),
+          cursorIndex,
+          language,
+          prefix
+        );
+        
+        // Convert to Monaco completion items
+        return {
+          suggestions: result.suggestions.map(item => ({
+            label: item.label,
+            kind: mapCompletionKind(item.kind),
+            documentation: item.documentation,
+            detail: item.detail,
+            insertText: item.insertText,
+            range: {
+              startLineNumber: position.lineNumber,
+              endLineNumber: position.lineNumber,
+              startColumn: wordAtPosition ? position.column - prefix.length : position.column,
+              endColumn: position.column
+            },
+            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
+          }))
+        };
+      }
+    });
+  };
+
+  // Map completion kind to Monaco completion kind
+  const mapCompletionKind = (kind: string): monaco.languages.CompletionItemKind => {
+    switch (kind) {
+      case 'function':
+        return monaco.languages.CompletionItemKind.Function;
+      case 'variable':
+        return monaco.languages.CompletionItemKind.Variable;
+      case 'class':
+        return monaco.languages.CompletionItemKind.Class;
+      case 'interface':
+        return monaco.languages.CompletionItemKind.Interface;
+      case 'property':
+        return monaco.languages.CompletionItemKind.Property;
+      case 'keyword':
+        return monaco.languages.CompletionItemKind.Keyword;
+      case 'method':
+        return monaco.languages.CompletionItemKind.Method;
+      case 'snippet':
+        return monaco.languages.CompletionItemKind.Snippet;
+      default:
+        return monaco.languages.CompletionItemKind.Text;
+    }
+  };
 
   // Update editor content when code prop changes
   useEffect(() => {
@@ -212,7 +324,10 @@ const MonacoEditor: React.FC<MonacoEditorProps> = ({
         fontSize: editorSettings.fontSize,
         tabSize: editorSettings.tabSize,
         wordWrap: editorSettings.wordWrap ? 'on' : 'off',
-        theme: isDark ? 'code-canvas-dark' : 'code-canvas-light'
+        theme: isDark ? 'code-canvas-dark' : 'code-canvas-light',
+        minimap: {
+          enabled: editorSettings.minimapEnabled
+        }
       });
     }
   }, [editorSettings, isDark, editor]);
@@ -260,8 +375,8 @@ const MonacoEditor: React.FC<MonacoEditorProps> = ({
         // Clear highlight if not debugging
         editor.deltaDecorations(
           editor.getModel()?.getAllDecorations()
-            .filter(d => d.options.className === 'currentLineHighlight')
-            .map(d => d.id) || [], 
+            .filter((d: monaco.editor.IModelDecoration) => d.options.className === 'currentLineHighlight')
+            .map((d: monaco.editor.IModelDecoration) => d.id) || [], 
           []
         );
       }
@@ -346,8 +461,8 @@ const MonacoEditor: React.FC<MonacoEditorProps> = ({
     
     editor.deltaDecorations(
       editor.getModel()?.getAllDecorations()
-        .filter(d => d.options.className === 'currentLineHighlight')
-        .map(d => d.id) || [], 
+        .filter((d: monaco.editor.IModelDecoration) => d.options.className === 'currentLineHighlight')
+        .map((d: monaco.editor.IModelDecoration) => d.id) || [], 
       [
         {
           range: {
@@ -436,8 +551,8 @@ const MonacoEditor: React.FC<MonacoEditorProps> = ({
     if (count > 0) {
       editor.pushUndoStop();
       const edits = matches
-        .sort((a, b) => b.range.startLineNumber - a.range.startLineNumber || b.range.startColumn - a.range.startColumn)
-        .map(match => ({
+        .sort((a: monaco.editor.FindMatch, b: monaco.editor.FindMatch) => b.range.startLineNumber - a.range.startLineNumber || b.range.startColumn - a.range.startColumn)
+        .map((match: monaco.editor.FindMatch) => ({
           range: match.range,
           text: replaceValue,
           forceMoveMarkers: true
@@ -474,6 +589,28 @@ const MonacoEditor: React.FC<MonacoEditorProps> = ({
     }
   };
 
+  const handleFormat = async () => {
+    if (!editor) return;
+    
+    // Get the current code
+    const code = editor.getValue();
+    
+    try {
+      // Format the code
+      const formattingProvider = editor.getAction('editor.action.formatDocument');
+      if (formattingProvider) {
+        await formattingProvider.run();
+      }
+      
+      // If needed, also update the project context
+      if (currentFile) {
+        updateFileContent(currentFile.id, editor.getValue());
+      }
+    } catch (error) {
+      console.error('Error formatting code:', error);
+    }
+  };
+
   const handleToggleDebugger = () => {
     setShowDebugger(!showDebugger);
     
@@ -490,7 +627,10 @@ const MonacoEditor: React.FC<MonacoEditorProps> = ({
   };
 
   return (
-    <div className={styles.container} style={{ backgroundColor: colors.codeBackground }}>
+    <div 
+      className={styles.container}
+      style={{ backgroundColor: colors.codeBackground }}
+    >
       <style>{`
         .breakpointGutter {
           background-color: ${colors.error};
@@ -538,12 +678,26 @@ const MonacoEditor: React.FC<MonacoEditorProps> = ({
         <button
           className={styles.toolbarButton}
           style={{ backgroundColor: colors.surface }}
-          onClick={handleSave}
-          title="Save (Ctrl+S)"
+          onClick={handleFormat}
+          title="Format Document (Alt+Shift+F)"
         >
-          <Save 
+          <AlignLeft size={16} color={colors.textSecondary} />
+        </button>
+
+        <button
+          className={styles.toolbarButton}
+          style={{ 
+            backgroundColor: colors.surface,
+            borderColor: showAISuggestions ? colors.primary : 'transparent',
+            borderWidth: showAISuggestions ? '1px' : '0',
+            borderStyle: 'solid'
+          }}
+          onClick={() => setShowAISuggestions(!showAISuggestions)}
+          title={showAISuggestions ? "Disable AI Suggestions" : "Enable AI Suggestions"}
+        >
+          <Zap 
             size={16} 
-            color={currentFile && hasUnsavedChanges(currentFile.id) ? colors.primary : colors.textSecondary} 
+            color={showAISuggestions ? colors.primary : colors.textSecondary} 
           />
         </button>
         
@@ -591,6 +745,18 @@ const MonacoEditor: React.FC<MonacoEditorProps> = ({
             />
           </button>
         )}
+        
+        <button
+          className={styles.toolbarButton}
+          style={{ backgroundColor: colors.surface }}
+          onClick={handleSave}
+          title="Save (Ctrl+S)"
+        >
+          <Save 
+            size={16} 
+            color={currentFile && hasUnsavedChanges(currentFile.id) ? colors.primary : colors.textSecondary} 
+          />
+        </button>
       </div>
       
       <div 

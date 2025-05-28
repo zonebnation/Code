@@ -211,6 +211,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Set user and session immediately
       setUser(data.user);
       setSession(data.session);
+      
+      // Store a first-time login flag to show quick start button
+      if (!localStorage.getItem('hasSeenWelcome')) {
+        localStorage.setItem('hasSeenWelcome', 'false');
+      }
     } catch (error: any) {
       console.error('Error signing in:', error);
       setError(error.message);

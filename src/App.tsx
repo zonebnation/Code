@@ -146,7 +146,7 @@ function AppRoutes() {
       <Route path="/share/:type/:id" element={<SharedContentScreen />} />
       
       <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-        <Route index element={<Navigate to="/editor" replace />} />
+        <Route index element={<Navigate to="/editor\" replace />} />
         <Route path="editor" element={<EditorScreen />} />
         <Route path="explorer" element={<ExplorerScreen />} />
         <Route path="terminal" element={<TerminalScreen />} />

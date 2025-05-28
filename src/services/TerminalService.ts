@@ -88,7 +88,7 @@ class TerminalService {
         const normalizedPath = this.normalizePath(path, context.currentDirectory);
         
         // Find all files in the current directory
-        const files = context.currentProject.files.filter(file => {
+        const files = context.currentProject.files.filter((file: any) => {
           const parentPath = file.path.substring(0, file.path.lastIndexOf('/'));
           return parentPath === normalizedPath || (normalizedPath === '/' && parentPath === '');
         });
@@ -98,18 +98,18 @@ class TerminalService {
         }
         
         let content = '<div class="file-list">';
-        const directories = files.filter(f => f.type === 'directory');
-        const regularFiles = files.filter(f => f.type === 'file');
+        const directories = files.filter((f: any) => f.type === 'directory');
+        const regularFiles = files.filter((f: any) => f.type === 'file');
         
         // Sort and display directories first, then files
-        directories.sort((a, b) => a.name.localeCompare(b.name));
-        regularFiles.sort((a, b) => a.name.localeCompare(b.name));
+        directories.sort((a: any, b: any) => a.name.localeCompare(b.name));
+        regularFiles.sort((a: any, b: any) => a.name.localeCompare(b.name));
         
-        directories.forEach(dir => {
+        directories.forEach((dir: any) => {
           content += `<div class="file-item directory">${dir.name}/</div>`;
         });
         
-        regularFiles.forEach(file => {
+        regularFiles.forEach((file: any) => {
           content += `<div class="file-item file">${file.name}</div>`;
         });
         
@@ -163,7 +163,7 @@ class TerminalService {
         
         // Check if the path exists and is a directory
         const directory = context.currentProject.files.find(
-          file => file.path === normalizedPath && file.type === 'directory'
+          (file: any) => file.path === normalizedPath && file.type === 'directory'
         );
         
         if (!directory) {
@@ -223,7 +223,8 @@ class TerminalService {
     try {
       return await command.handler(args.slice(1), context);
     } catch (error) {
-      return { content: `Error executing command: ${error}`, isError: true };
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      return { content: `Error executing command: ${errorMessage}`, isError: true };
     }
   }
   

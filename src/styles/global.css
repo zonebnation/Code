@@ -27,6 +27,30 @@
   --color-text-secondary-dark: #9D9D9D;
   --color-code-background-dark: #1E1E1E;
   
+  /* High Contrast Dark theme colors */
+  --color-primary-high-contrast: #4AEAFF;
+  --color-background-high-contrast: #000000;
+  --color-surface-high-contrast: #1A1A1A;
+  --color-text-high-contrast: #FFFFFF;
+  
+  /* Sepia theme colors */
+  --color-primary-sepia: #8B5A2B;
+  --color-background-sepia: #F4ECD8;
+  --color-surface-sepia: #FBF6E9;
+  --color-text-sepia: #52443B;
+  
+  /* Midnight Blue theme colors */
+  --color-primary-midnight: #5B8BF6;
+  --color-background-midnight: #0F172A;
+  --color-surface-midnight: #1E293B;
+  --color-text-midnight: #E2E8F0;
+  
+  /* Material Dark theme colors */
+  --color-primary-material: #BB86FC;
+  --color-background-material: #121212;
+  --color-surface-material: #1E1E1E;
+  --color-text-material: #E1E1E1;
+  
   /* Font sizes - we'll use these for responsive scaling */
   --font-size-xs: clamp(10px, 2.5vw, 12px);
   --font-size-sm: clamp(12px, 3vw, 14px);
@@ -125,6 +149,17 @@ button, [role="button"], a, input, select, textarea {
   min-height: 44px;
 }
 
+/* Button active state for mobile */
+button:active, 
+[role="button"]:active,
+a:active,
+.tabItem:active,
+.settingItem:active {
+  opacity: 0.7;
+  transform: scale(0.98);
+  transition: opacity 0.1s, transform 0.1s;
+}
+
 /* Make all images responsive */
 img {
   max-width: 100%;
@@ -144,6 +179,37 @@ input, select, textarea {
   font-size: 16px; /* Prevent zoom on focus in iOS */
   max-width: 100%;
   box-sizing: border-box;
+}
+
+/* Theme-specific styles */
+body.light-theme {
+  background-color: var(--color-background-light);
+  color: var(--color-text-light);
+}
+
+body.dark-theme {
+  background-color: var(--color-background-dark);
+  color: var(--color-text-dark);
+}
+
+body.high-contrast-theme {
+  background-color: var(--color-background-high-contrast);
+  color: var(--color-text-high-contrast);
+}
+
+body.sepia-theme {
+  background-color: var(--color-background-sepia);
+  color: var(--color-text-sepia);
+}
+
+body.midnight-theme {
+  background-color: var(--color-background-midnight);
+  color: var(--color-text-midnight);
+}
+
+body.material-theme {
+  background-color: var(--color-background-material);
+  color: var(--color-text-material);
 }
 
 @media (max-width: 768px) {
@@ -323,6 +389,61 @@ input, select, textarea {
 
 .hljs-light .hljs-strong {
   font-weight: bold;
+}
+
+/* High contrast theme syntax highlighting */
+.high-contrast-theme .hljs-keyword {
+  color: #78D7FF;
+}
+
+.high-contrast-theme .hljs-string {
+  color: #FFA0A0;
+}
+
+.high-contrast-theme .hljs-comment {
+  color: #7CD47C;
+}
+
+.high-contrast-theme .hljs-function {
+  color: #FFFF7C;
+}
+
+.high-contrast-theme .hljs-variable {
+  color: #C4E7FF;
+}
+
+/* Sepia theme syntax highlighting */
+.sepia-theme .hljs-keyword {
+  color: #7C552B;
+}
+
+.sepia-theme .hljs-string {
+  color: #A04D3C;
+}
+
+.sepia-theme .hljs-comment {
+  color: #6F7741;
+}
+
+.sepia-theme .hljs-function {
+  color: #6A563D;
+}
+
+/* Material theme syntax highlighting */
+.material-theme .hljs-keyword {
+  color: #BB86FC;
+}
+
+.material-theme .hljs-string {
+  color: #03DAC6;
+}
+
+.material-theme .hljs-comment {
+  color: #6A737D;
+}
+
+.material-theme .hljs-function {
+  color: #82AAFF;
 }
 
 /* Add line numbers support */

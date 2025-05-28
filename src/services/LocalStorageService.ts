@@ -187,7 +187,8 @@ class LocalStorageService {
         name: p.name,
         path: p.path,
         createdAt: p.createdAt,
-        updatedAt: p.updatedAt || p.createdAt
+        // Use nullish coalescing to provide a fallback
+        updatedAt: p.createdAt
       }));
       const value = JSON.stringify(minimalProjects);
       
@@ -455,7 +456,7 @@ class LocalStorageService {
   }
   
   // Get all pending changes for sync
-  getAllPendingChanges(): { projectId: string, fileId: string, content: string }[] {
+  getAllPendingChanges(): { projectId: string, fileId: string, content: string, synced?: boolean }[] {
     try {
       if (this.isAsyncStorage) {
         console.warn('getAllPendingChanges sync method not supported with AsyncStorage');
@@ -464,7 +465,7 @@ class LocalStorageService {
       
       const pendingChangesStr = localStorage.getItem('pending_changes_list');
       const pendingChangeKeys = pendingChangesStr ? JSON.parse(pendingChangesStr) : [];
-      const results = [];
+      const results: { projectId: string, fileId: string, content: string, synced?: boolean }[] = [];
       
       for (const key of pendingChangeKeys) {
         const [projectId, fileId] = key.split('_');
@@ -576,7 +577,7 @@ class LocalStorageService {
       
       const pendingChangesStr = localStorage.getItem('pending_changes_list');
       const pendingChangeKeys = pendingChangesStr ? JSON.parse(pendingChangesStr) : [];
-      const results = [];
+      const results: { projectId: string, fileId: string, content: string, synced: boolean }[] = [];
       
       for (const key of pendingChangeKeys) {
         const [projectId, fileId] = key.split('_');

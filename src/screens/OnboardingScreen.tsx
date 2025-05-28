@@ -86,7 +86,7 @@ const OnboardingScreen = () => {
         </button>
       </div>
       
-      <style jsx>{`
+      <style dangerouslySetInnerHTML={{__html: `
         .onboarding-screen {
           height: 100vh;
           display: flex;
@@ -177,7 +177,7 @@ const OnboardingScreen = () => {
           border: none;
           cursor: pointer;
         }
-      `}</style>
+      `}} />
     </div>
   );
 };

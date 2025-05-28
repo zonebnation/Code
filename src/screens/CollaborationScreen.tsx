@@ -17,7 +17,7 @@ import EmptyState from '../components/shared/EmptyState';
 import InvitationsList from '../components/Collaboration/InvitationsList';
 import CollaboratorsPanel from '../components/Collaboration/CollaboratorsPanel';
 import styles from './CollaborationScreen.module.css';
-import { supabase } from '../lib/supabase-init';
+import { supabase } from '../services/supabase';
 import { useNavigate } from 'react-router-dom';
 import ShareModal from '../components/Sharing/ShareModal';
 
@@ -215,7 +215,7 @@ const CollaborationScreen = () => {
   if (!user) {
     return (
       <EmptyState
-        icon="Users"
+        icon="FileCode"
         title="Sign In Required"
         message="Please sign in to view your collaboration invitations and shared projects."
         actionText="Sign In"
@@ -473,7 +473,7 @@ const CollaborationScreen = () => {
       <ShareModal 
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
-        project={currentProject}
+        project={currentProject || undefined}
       />
     </div>
   );

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { useProject } from '../../context/ProjectContext';
 import { useAuth } from '../../context/AuthContext';
-import { supabase } from '../../lib/supabase-init';
+import { supabase } from '../../services/supabase';
 import { 
   User, 
   UserPlus, 
@@ -18,6 +18,7 @@ import {
   Users
 } from 'lucide-react';
 import styles from './CollaboratorsPanel.module.css';
+import { RealtimeChannel } from '@supabase/supabase-js';
 
 type Collaborator = {
   id: string;
@@ -48,7 +49,7 @@ const CollaboratorsPanel: React.FC = () => {
   const [canInvite, setCanInvite] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const channelRef = useRef<any>(null);
+  const channelRef = useRef<RealtimeChannel | null>(null);
   
   // Invite form state
   const [showInviteForm, setShowInviteForm] = useState(false);
@@ -64,7 +65,9 @@ const CollaboratorsPanel: React.FC = () => {
       setupRealtimeSubscriptions();
       
       // Check if current user is the project owner
-      setIsOwner(currentProject.userId === user.id);
+      if (currentProject.user_id === user.id) {
+        setIsOwner(true);
+      }
       
       return () => {
         // Clean up subscriptions
@@ -74,13 +77,12 @@ const CollaboratorsPanel: React.FC = () => {
       };
     }
   }, [currentProject, user]);
-
-  // Fetch collaborators and pending invitations
+  
+  // Fetch pending invitations and shared projects
   const fetchCollaborators = async () => {
     if (!currentProject || !user) return;
     
     setLoading(true);
-    setError(null);
     
     try {
       // Get project collaborators
@@ -96,7 +98,7 @@ const CollaboratorsPanel: React.FC = () => {
       if (collaboratorsError) throw collaboratorsError;
       
       // Format collaborators data
-      const formattedCollaborators: Collaborator[] = collaboratorsData.map(collab => ({
+      const formattedCollaborators: Collaborator[] = collaboratorsData.map((collab: any) => ({
         id: collab.profiles.id,
         username: collab.profiles.username,
         avatar_url: collab.profiles.avatar_url,
@@ -142,7 +144,7 @@ const CollaboratorsPanel: React.FC = () => {
       if (invitesError) throw invitesError;
       
       // Format invitations data
-      const formattedInvites: Invitation[] = invitesData.map(invite => ({
+      const formattedInvites: Invitation[] = invitesData.map((invite: any) => ({
         id: invite.id,
         invitee_id: invite.invitee.id,
         invitee_username: invite.invitee.username,
@@ -154,9 +156,9 @@ const CollaboratorsPanel: React.FC = () => {
       
       setPendingInvites(formattedInvites);
       
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error fetching collaborators:', error);
-      setError(error.message);
+      setError('Failed to load collaborators');
     } finally {
       setLoading(false);
     }
@@ -287,7 +289,7 @@ const CollaboratorsPanel: React.FC = () => {
       
     } catch (error: any) {
       console.error('Error canceling invitation:', error);
-      setError(error.message);
+      setError(error.message || 'An unexpected error occurred');
     }
   };
 
@@ -309,7 +311,7 @@ const CollaboratorsPanel: React.FC = () => {
       
     } catch (error: any) {
       console.error('Error removing collaborator:', error);
-      setError(error.message);
+      setError(error.message || 'An unexpected error occurred');
     }
   };
 
@@ -331,7 +333,7 @@ const CollaboratorsPanel: React.FC = () => {
       
     } catch (error: any) {
       console.error('Error changing permission:', error);
-      setError(error.message);
+      setError(error.message || 'An unexpected error occurred');
     }
   };
   
@@ -360,7 +362,7 @@ const CollaboratorsPanel: React.FC = () => {
       
     } catch (error: any) {
       console.error('Error updating project settings:', error);
-      setError(error.message);
+      setError(error.message || 'An unexpected error occurred');
     }
   };
 
@@ -372,7 +374,6 @@ const CollaboratorsPanel: React.FC = () => {
       case 'write':
         return <Edit size={14} color={colors.primary} />;
       case 'read':
-        return <Eye size={14} color={colors.textSecondary} />;
       default:
         return <Eye size={14} color={colors.textSecondary} />;
     }
@@ -386,9 +387,8 @@ const CollaboratorsPanel: React.FC = () => {
       case 'write':
         return 'Can edit';
       case 'read':
-        return 'Can view';
       default:
-        return 'Unknown';
+        return 'Can view';
     }
   };
 
@@ -405,10 +405,20 @@ const CollaboratorsPanel: React.FC = () => {
         </div>
         
         {canInvite && (
-          <button
+          <button 
             className={styles.inviteButton}
             onClick={() => setShowInviteForm(true)}
-            style={{ backgroundColor: colors.primary }}
+            style={{
+              backgroundColor: colors.primary,
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '8px 16px',
+              borderRadius: '20px',
+              border: 'none',
+              marginLeft: 'auto'
+            }}
           >
             <UserPlus size={14} color="#FFFFFF" />
             <span>Invite</span>
@@ -508,6 +518,7 @@ const CollaboratorsPanel: React.FC = () => {
               >
                 Cancel
               </button>
+              
               <button
                 type="submit"
                 className={styles.submitButton}
@@ -541,7 +552,7 @@ const CollaboratorsPanel: React.FC = () => {
               <div className={styles.collaboratorItem}>
                 <div className={styles.collaboratorInfo}>
                   <div className={styles.avatar} style={{ backgroundColor: `${colors.primary}30` }}>
-                    {currentProject.userId === user.id ? (
+                    {currentProject.user_id === user.id ? (
                       profile?.avatar_url ? (
                         <img src={profile.avatar_url} alt={profile.username || 'Owner'} />
                       ) : (
@@ -553,7 +564,7 @@ const CollaboratorsPanel: React.FC = () => {
                   </div>
                   <div className={styles.userInfo}>
                     <div className={styles.username} style={{ color: colors.text }}>
-                      {currentProject.userId === user.id ? 
+                      {currentProject.user_id === user.id ? 
                         (profile?.username || 'You') : 
                         'Project Owner'}
                     </div>

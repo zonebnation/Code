@@ -1,4 +1,5 @@
-import { File, FileSearchResult, SearchMatch } from '../types/editor';
+import { File } from '../types/editor';
+import { FileSearchResult, SearchMatch } from '../types/editor';
 
 export interface SearchOptions {
   matchCase: boolean;

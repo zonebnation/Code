@@ -49,7 +49,7 @@ const LandingPage = () => {
         </div>
       </div>
       
-      <style jsx>{`
+      <style dangerouslySetInnerHTML={{__html: `
         .landing-page {
           height: 100vh;
           display: flex;
@@ -113,7 +113,7 @@ const LandingPage = () => {
           font-size: 1.5rem;
           margin-bottom: 0.75rem;
         }
-      `}</style>
+      `}} />
     </div>
   );
 };

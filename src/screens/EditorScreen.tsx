@@ -27,6 +27,7 @@ const EditorScreen = () => {
   const [isCollaborative, setIsCollaborative] = useState<boolean>(false);
   const [collaborators, setCollaborators] = useState<PresenceData[]>([]);
   const [remoteCursors, setRemoteCursors] = useState<CursorData[]>([]);
+  const [showAISuggestions, setShowAISuggestions] = useState<boolean>(true);
 
   useEffect(() => {
     if (currentFile) {
@@ -39,7 +40,7 @@ const EditorScreen = () => {
   // Check browser/device capabilities to decide which editor to use
   useEffect(() => {
     // On very low-end devices, we might want to use the simpler editor
-    const isLowEndDevice = navigator.deviceMemory && navigator.deviceMemory < 4;
+    const isLowEndDevice = (navigator as any).deviceMemory && (navigator as any).deviceMemory < 4;
     const savedPreference = localStorage.getItem('codeCanvas_useMonacoEditor');
     
     if (savedPreference !== null) {
@@ -63,7 +64,7 @@ const EditorScreen = () => {
             currentProject.id,
             user.id,
             profile?.username || user.email?.split('@')[0] || 'Anonymous',
-            profile?.avatar_url,
+            profile?.avatar_url || null,
             setCollaborators
           );
           
@@ -163,6 +164,16 @@ const EditorScreen = () => {
     setShowChat(!showChat);
   };
 
+  // Toggle AI suggestions
+  const toggleAISuggestions = () => {
+    setShowAISuggestions(!showAISuggestions);
+  };
+
+  // Format code
+  const handleFormat = async () => {
+    // Format is handled in the editor components
+  };
+
   if (!currentProject) {
     return (
       <EmptyState
@@ -207,6 +218,9 @@ const EditorScreen = () => {
         onToggleChat={toggleChat}
         isChatActive={showChat && isCollaborative}
         isCollaborative={isCollaborative}
+        onFormat={handleFormat}
+        onToggleAI={toggleAISuggestions}
+        isAIActive={showAISuggestions}
       />
       
       <div className={styles.editorContainer}>

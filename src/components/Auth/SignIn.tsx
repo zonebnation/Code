@@ -35,37 +35,51 @@ const SignIn: React.FC<SignInProps> = ({ onSwitch }) => {
   };
 
   return (
-    <div className="signin-form">
+    <div className="signin-container">
       <h2 className="title" style={{ color: colors.text }}>Welcome Back</h2>
       <p className="subtitle" style={{ color: colors.textSecondary }}>Sign in to your account</p>
       
       {(error || validationError) && (
-        <div className="error-container" style={{ backgroundColor: `${colors.error}20` }}>
+        <div 
+          className="error-container" 
+          style={{ backgroundColor: `${colors.error}20` }}
+        >
           <p className="error-text" style={{ color: colors.error }}>{validationError || error}</p>
         </div>
       )}
 
       <form onSubmit={handleSignIn}>
-        <div className="input-group">
+        <div className="form-group">
           <label htmlFor="email" style={{ color: colors.textSecondary }}>Email</label>
-          <div className="input-container" style={{ borderColor: colors.border, backgroundColor: colors.background }}>
-            <Mail size={20} color={colors.textSecondary} className="input-icon" />
+          <div 
+            className="input-container" 
+            style={{ 
+              borderColor: colors.border, 
+              backgroundColor: colors.background 
+            }}
+          >
+            <Mail size={20} color={colors.textSecondary} />
             <input
               id="email"
               type="email"
               placeholder="your.email@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
               style={{ color: colors.text }}
             />
           </div>
         </div>
         
-        <div className="input-group">
+        <div className="form-group">
           <label htmlFor="password" style={{ color: colors.textSecondary }}>Password</label>
-          <div className="input-container" style={{ borderColor: colors.border, backgroundColor: colors.background }}>
-            <Lock size={20} color={colors.textSecondary} className="input-icon" />
+          <div 
+            className="input-container" 
+            style={{ 
+              borderColor: colors.border, 
+              backgroundColor: colors.background 
+            }}
+          >
+            <Lock size={20} color={colors.textSecondary} />
             <input
               id="password"
               type="password"
@@ -77,9 +91,11 @@ const SignIn: React.FC<SignInProps> = ({ onSwitch }) => {
           </div>
         </div>
         
-        <button type="button" className="forgot-password" style={{ color: colors.primary }}>
-          Forgot Password?
-        </button>
+        <div className="forgot-password-container">
+          <button type="button" className="forgot-button" style={{ color: colors.primary }}>
+            Forgot Password?
+          </button>
+        </div>
         
         <button
           type="submit"
@@ -93,7 +109,7 @@ const SignIn: React.FC<SignInProps> = ({ onSwitch }) => {
       
       <div className="divider">
         <div className="divider-line" style={{ backgroundColor: colors.border }}></div>
-        <span className="divider-text" style={{ color: colors.textSecondary }}>or continue with</span>
+        <span className="divider-text" style={{ color: colors.textSecondary, backgroundColor: colors.surface }}>or continue with</span>
         <div className="divider-line" style={{ backgroundColor: colors.border }}></div>
       </div>
       
@@ -102,18 +118,20 @@ const SignIn: React.FC<SignInProps> = ({ onSwitch }) => {
           className="social-button"
           onClick={() => signInWithGithub()}
           type="button"
-          style={{ borderColor: colors.border, backgroundColor: colors.background, color: colors.text }}
+          style={{ borderColor: colors.border, backgroundColor: colors.background }}
         >
-          <Github size={20} />
+          <Github size={20} color={colors.text} />
+          <span style={{ color: colors.text }}>GitHub</span>
         </button>
         
         <button
           className="social-button"
           onClick={() => signInWithGoogle()}
           type="button"
-          style={{ borderColor: colors.border, backgroundColor: colors.background, color: colors.text }}
+          style={{ borderColor: colors.border, backgroundColor: colors.background }}
         >
-          <ToggleLeft size={20} />
+          <ToggleLeft size={20} color={colors.text} />
+          <span style={{ color: colors.text }}>Google</span>
         </button>
       </div>
       
@@ -124,13 +142,13 @@ const SignIn: React.FC<SignInProps> = ({ onSwitch }) => {
         </button>
       </div>
       
-      <style dangerouslySetInnerHTML={{__html: `
-        .signin-form {
+      <style>{`
+        .signin-container {
           width: 100%;
         }
         
         .title {
-          font-size: 24px;
+          font-size: 28px;
           font-weight: bold;
           margin-bottom: 8px;
           text-align: center;
@@ -143,23 +161,25 @@ const SignIn: React.FC<SignInProps> = ({ onSwitch }) => {
         }
         
         .error-container {
-          padding: 12px;
-          border-radius: 8px;
-          margin-bottom: 16px;
+          padding: 16px;
+          border-radius: 12px;
+          margin-bottom: 24px;
         }
         
         .error-text {
           font-size: 14px;
+          margin: 0;
         }
         
-        .input-group {
-          margin-bottom: 16px;
+        .form-group {
+          margin-bottom: 20px;
         }
         
         label {
           display: block;
           font-size: 14px;
-          margin-bottom: 6px;
+          font-weight: 500;
+          margin-bottom: 8px;
         }
         
         .input-container {
@@ -168,13 +188,14 @@ const SignIn: React.FC<SignInProps> = ({ onSwitch }) => {
           align-items: center;
           border-width: 1px;
           border-style: solid;
-          border-radius: 8px;
-          height: 48px;
+          border-radius: 12px;
+          height: 56px;
+          padding: 0 16px;
+          overflow: hidden;
         }
         
-        .input-icon {
-          position: absolute;
-          left: 12px;
+        .input-container svg {
+          margin-right: 12px;
         }
         
         input {
@@ -182,41 +203,54 @@ const SignIn: React.FC<SignInProps> = ({ onSwitch }) => {
           height: 100%;
           background: transparent;
           border: none;
-          padding: 0 12px 0 40px;
+          padding: 0;
           font-size: 16px;
           outline: none;
+          font-family: inherit;
         }
         
-        .forgot-password {
-          font-size: 14px;
-          text-align: right;
+        .forgot-password-container {
+          display: flex;
+          justify-content: flex-end;
+          margin-bottom: 24px;
+        }
+        
+        .forgot-button {
           background: none;
           border: none;
+          font-size: 14px;
+          font-weight: 500;
           cursor: pointer;
-          margin-left: auto;
-          display: block;
-          margin-bottom: 16px;
+          font-family: inherit;
+          padding: 4px;
         }
         
         .signin-button {
           width: 100%;
-          height: 48px;
+          height: 56px;
           border: none;
-          border-radius: 8px;
+          border-radius: 12px;
           color: white;
           font-size: 16px;
           font-weight: 600;
           cursor: pointer;
+          transition: transform 0.2s, opacity 0.2s;
+          font-family: inherit;
         }
         
         .signin-button:disabled {
           opacity: 0.7;
         }
         
+        .signin-button:active {
+          transform: scale(0.98);
+        }
+        
         .divider {
           display: flex;
           align-items: center;
-          margin: 24px 0;
+          margin: 32px 0;
+          position: relative;
         }
         
         .divider-line {
@@ -227,25 +261,36 @@ const SignIn: React.FC<SignInProps> = ({ onSwitch }) => {
         .divider-text {
           margin: 0 16px;
           font-size: 14px;
+          padding: 0 8px;
         }
         
         .social-buttons {
           display: flex;
-          justify-content: center;
-          margin-bottom: 24px;
+          justify-content: space-between;
+          gap: 16px;
+          margin-bottom: 32px;
         }
         
         .social-button {
-          width: 48px;
-          height: 48px;
-          border-radius: 8px;
+          flex: 1;
+          height: 56px;
+          border-radius: 12px;
           border-width: 1px;
           border-style: solid;
           display: flex;
           align-items: center;
           justify-content: center;
-          margin: 0 8px;
+          gap: 8px;
           cursor: pointer;
+          font-size: 14px;
+          font-weight: 500;
+          transition: transform 0.2s, opacity 0.2s;
+          font-family: inherit;
+        }
+        
+        .social-button:active {
+          transform: scale(0.98);
+          opacity: 0.9;
         }
         
         .switch-container {
@@ -257,6 +302,7 @@ const SignIn: React.FC<SignInProps> = ({ onSwitch }) => {
         .switch-text {
           font-size: 14px;
           margin-right: 4px;
+          margin-bottom: 0;
         }
         
         .switch-button {
@@ -265,8 +311,28 @@ const SignIn: React.FC<SignInProps> = ({ onSwitch }) => {
           background: none;
           border: none;
           cursor: pointer;
+          font-family: inherit;
+          padding: 4px;
         }
-      `}} />
+        
+        @media (max-width: 480px) {
+          .title {
+            font-size: 24px;
+          }
+          
+          .subtitle {
+            font-size: 14px;
+          }
+          
+          .input-container {
+            height: 50px;
+          }
+          
+          .signin-button, .social-button {
+            height: 50px;
+          }
+        }
+      `}</style>
     </div>
   );
 };

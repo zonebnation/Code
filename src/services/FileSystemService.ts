@@ -90,7 +90,9 @@ class FileSystemService {
           content: '// App logic goes here\nconsole.log("App initialized");',
         }
       ],
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      user_id: 'mock-user-id',
+      is_public: false
     };
     
     return project;

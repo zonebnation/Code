@@ -3,4 +3,21 @@ include ':app'
 include ':capacitor-android'
 project(':capacitor-android').projectDir = new File('../node_modules/@capacitor/android/capacitor')
 
-apply from: 'capacitor.settings.gradle'
+// Include any other Capacitor plugins if they exist
+def capPluginsDir = new File(rootProject.projectDir, '../node_modules/@capacitor')
+if (capPluginsDir.exists()) {
+    capPluginsDir.eachDir { dir ->
+        def androidDir = new File(dir, 'android')
+        if (androidDir.exists()) {
+            def pluginName = "capacitor-" + dir.name
+            include ":$pluginName"
+            project(":$pluginName").projectDir = androidDir
+        }
+    }
+}
+
+// Include Capacitor Cordova plugins
+def cordovaPluginsFile = new File(rootProject.projectDir, 'capacitor.settings.gradle')
+if (cordovaPluginsFile.exists()) {
+    apply from: 'capacitor.settings.gradle'
+}

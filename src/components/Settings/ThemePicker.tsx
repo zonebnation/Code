@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
-import { Check, ChevronDown } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { ColorTheme } from '../../context/SettingsContext';
 import styles from './ThemePicker.module.css';
 
@@ -20,7 +20,7 @@ const ThemePicker: React.FC<ThemePickerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const themes = [
+  const themes: { id: ColorTheme; name: string; description: string }[] = [
     { 
       id: 'default', 
       name: isDark ? 'Dark+' : 'Light+', 
@@ -89,6 +89,11 @@ const ThemePicker: React.FC<ThemePickerProps> = ({
     };
   }, [isOpen]);
 
+  const handleSelect = (themeId: ColorTheme) => {
+    onChange(themeId);
+    setIsOpen(false);
+  };
+
   return (
     <div className={styles.container} ref={containerRef}>
       <button
@@ -97,7 +102,7 @@ const ThemePicker: React.FC<ThemePickerProps> = ({
         onClick={() => setIsOpen(!isOpen)}
       >
         <span style={{ color: colors.text }}>{currentTheme.name}</span>
-        <ChevronDown size={16} color={colors.textSecondary} />
+        <Check size={16} color={colors.textSecondary} />
       </button>
 
       {isOpen && (
@@ -116,20 +121,21 @@ const ThemePicker: React.FC<ThemePickerProps> = ({
                 key={theme.id}
                 className={styles.themeItem}
                 style={{ borderBottomColor: colors.border }}
-                onClick={() => {
-                  onChange(theme.id as ColorTheme);
-                  setIsOpen(false);
-                }}
+                onClick={() => handleSelect(theme.id)}
               >
                 <div className={styles.themeInfo}>
-                  <div className={styles.themeName} style={{ color: colors.text }}>
+                  <span 
+                    className={styles.themeName}
+                    style={{ color: theme.id === value ? colors.primary : colors.text }}
+                  >
                     {theme.name}
-                  </div>
-                  <div className={styles.themeDescription} style={{ color: colors.textSecondary }}>
+                  </span>
+                  <span className={styles.themeDescription} style={{ color: colors.textSecondary }}>
                     {theme.description}
-                  </div>
+                  </span>
                 </div>
-                {value === theme.id && (
+                
+                {theme.id === value && (
                   <Check size={16} color={colors.primary} />
                 )}
               </button>

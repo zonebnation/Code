@@ -3,7 +3,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { useProject } from '../../context/ProjectContext';
 import { useAuth } from '../../context/AuthContext';
 import CollaborationService from '../../services/CollaborationService';
-import { CursorData } from '../../types/collaboration';
+import { CursorData, PresenceData } from '../../types/collaboration';
 import styles from './CollaborativeEditor.module.css';
 
 interface CollaborativeEditorProps {
@@ -49,7 +49,7 @@ const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
           fileId,
           user.id,
           profile?.username || user.email?.split('@')[0] || 'Anonymous',
-          profile?.avatar_url,
+          profile?.avatar_url || null,
           editorRef.current,
           handleRemoteContentChange,
           handleRemoteCursorsChange
@@ -70,10 +70,10 @@ const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
         CollaborationService.leaveFile(currentProject.id, fileId);
       }
     };
-  }, [currentProject, user, fileId]);
-  
+  }, [currentProject, user, fileId, profile]);
+
   // Handle remote content changes
-  const handleRemoteContentChange = (fileId: string, newContent: string, remoteUser: any) => {
+  const handleRemoteContentChange = (fileId: string, newContent: string, remoteUser: PresenceData) => {
     console.log(`Received content change from ${remoteUser.username}`);
     onContentChange(newContent);
   };
@@ -82,7 +82,7 @@ const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
   const handleRemoteCursorsChange = (newCursors: CursorData[]) => {
     setCursors(newCursors);
   };
-  
+
   // Capture reference to the editor
   const setEditorRef = (editor: any) => {
     editorRef.current = editor;
@@ -96,7 +96,7 @@ const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
         fileId,
         user.id,
         profile?.username || user.email?.split('@')[0] || 'Anonymous',
-        profile?.avatar_url,
+        profile?.avatar_url || null,
         editor,
         handleRemoteContentChange,
         handleRemoteCursorsChange
@@ -121,7 +121,9 @@ const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
       {/* Render children with ref */}
       {React.Children.map(children, child => {
         if (React.isValidElement(child)) {
-          return React.cloneElement(child, { ref: setEditorRef });
+          // Use a more specific type assertion
+          return React.cloneElement(child as React.ReactElement<any>, 
+            { ref: setEditorRef } as React.HTMLAttributes<unknown>);
         }
         return child;
       })}

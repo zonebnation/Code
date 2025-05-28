@@ -11,14 +11,18 @@ import {
 } from 'lucide-react';
 import ShareModal from '../Sharing/ShareModal';
 import SharingService from '../../services/SharingService';
+import { useNavigate } from 'react-router-dom';
 
 const ProjectActions: React.FC = () => {
   const { colors } = useTheme();
   const { currentProject, createNewFile, createNewFolder } = useProject();
+  const navigate = useNavigate();
   const [isActionsVisible, setIsActionsVisible] = useState(false);
   const [modalType, setModalType] = useState<'file' | 'folder' | null>(null);
   const [name, setName] = useState('');
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   const toggleActions = () => {
     setIsActionsVisible(!isActionsVisible);
@@ -27,27 +31,36 @@ const ProjectActions: React.FC = () => {
   const showNewFileModal = () => {
     setModalType('file');
     setName('');
+    setErrorMessage(null);
     setIsActionsVisible(false);
   };
   
   const showNewFolderModal = () => {
     setModalType('folder');
     setName('');
+    setErrorMessage(null);
     setIsActionsVisible(false);
   };
   
   const closeModal = () => {
     setModalType(null);
+    setErrorMessage(null);
   };
 
   const handleExportProject = async () => {
     if (!currentProject) return;
     
     try {
-      const success = await SharingService.exportProject(currentProject);
-      if (!success) {
-        alert('Failed to export project');
-      }
+      // In this version, we'll handle project export locally since SharingService.exportProject doesn't exist
+      const blob = new Blob([JSON.stringify(currentProject, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${currentProject.name}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error exporting project:', error);
       alert('Failed to export project');
@@ -57,7 +70,13 @@ const ProjectActions: React.FC = () => {
   };
   
   const handleCreate = async () => {
-    if (!name.trim()) return;
+    if (!name.trim()) {
+      setErrorMessage('Name cannot be empty');
+      return;
+    }
+    
+    setIsCreating(true);
+    setErrorMessage(null);
     
     try {
       if (modalType === 'file') {
@@ -66,9 +85,33 @@ const ProjectActions: React.FC = () => {
         await createNewFolder(name);
       }
       closeModal();
-    } catch (error) {
+      
+      // If this was a new file, navigate to editor
+      if (modalType === 'file') {
+        navigate('/editor');
+      }
+    } catch (error: any) {
       console.error(`Error creating ${modalType}:`, error);
-      alert(`Failed to create ${modalType}. Please try again.`);
+      setErrorMessage(error.message || `Failed to create ${modalType}. Please try again.`);
+    } finally {
+      setIsCreating(false);
+    }
+  };
+  
+  const handleQuickCreate = async () => {
+    if (!currentProject) return;
+    
+    try {
+      setIsCreating(true);
+      // Create a file with default name
+      const defaultName = `file${Math.floor(Math.random() * 10000)}.js`;
+      await createNewFile(defaultName);
+      navigate('/editor');
+    } catch (error) {
+      console.error('Error creating file:', error);
+      alert('Failed to create file. Please try again.');
+    } finally {
+      setIsCreating(false);
     }
   };
   
@@ -80,10 +123,15 @@ const ProjectActions: React.FC = () => {
         <button
           className="mainButton"
           style={{ backgroundColor: colors.primary }}
-          onClick={toggleActions}
+          onClick={isCreating ? undefined : toggleActions}
           aria-label="Create new file or folder"
+          disabled={isCreating}
         >
-          <Plus size={24} color="#FFFFFF" />
+          {isCreating ? (
+            <span className="loading-spinner"></span>
+          ) : (
+            <Plus size={24} color="#FFFFFF" />
+          )}
         </button>
         
         {isActionsVisible && (
@@ -170,6 +218,20 @@ const ProjectActions: React.FC = () => {
               </button>
             </div>
             
+            {errorMessage && (
+              <div 
+                style={{
+                  margin: '0 0 16px 0',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  backgroundColor: `${colors.error}15`,
+                  color: colors.error
+                }}
+              >
+                {errorMessage}
+              </div>
+            )}
+            
             <input
               className="input"
               style={{ 
@@ -193,17 +255,22 @@ const ProjectActions: React.FC = () => {
                 className="button cancelButton"
                 style={{ borderColor: colors.border, color: colors.text }}
                 onClick={closeModal}
+                disabled={isCreating}
               >
                 Cancel
               </button>
               
               <button
                 className="button createButton"
-                style={{ backgroundColor: colors.primary, color: '#FFFFFF' }}
+                style={{ 
+                  backgroundColor: colors.primary, 
+                  color: '#FFFFFF',
+                  opacity: !name.trim() || isCreating ? 0.7 : 1
+                }}
                 onClick={handleCreate}
-                disabled={!name.trim()}
+                disabled={!name.trim() || isCreating}
               >
-                Create
+                {isCreating ? 'Creating...' : 'Create'}
               </button>
             </div>
           </div>
@@ -216,7 +283,7 @@ const ProjectActions: React.FC = () => {
         project={currentProject}
       />
 
-      <style jsx>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .container {
           position: absolute;
           bottom: 16px;
@@ -228,13 +295,13 @@ const ProjectActions: React.FC = () => {
         }
         
         .mainButton {
-          width: 48px;
-          height: 48px;
-          border-radius: 24px;
+          width: 56px;
+          height: 56px;
+          border-radius: 28px;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
           border: none;
           cursor: pointer;
           transition: transform 0.2s ease;
@@ -244,16 +311,35 @@ const ProjectActions: React.FC = () => {
           transform: scale(1.05);
         }
         
+        .mainButton:active {
+          transform: scale(0.98);
+        }
+        
+        .loading-spinner {
+          width: 24px;
+          height: 24px;
+          border: 3px solid rgba(255,255,255,0.3);
+          border-radius: 50%;
+          border-top-color: #fff;
+          animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
         .actionsMenu {
           position: absolute;
-          bottom: 60px;
+          bottom: 70px;
           right: 0;
-          border-radius: 8px;
+          border-radius: 12px;
           border-width: 1px;
           border-style: solid;
           padding: 8px;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
           animation: fadeIn 0.2s ease;
+          min-width: 180px;
         }
         
         @keyframes fadeIn {
@@ -265,19 +351,23 @@ const ProjectActions: React.FC = () => {
           display: flex;
           flex-direction: row;
           align-items: center;
-          padding: 8px 12px;
+          padding: 12px;
           border: none;
           background: none;
           cursor: pointer;
           width: 100%;
           text-align: left;
-          border-radius: 4px;
+          border-radius: 8px;
           transition: background-color 0.2s ease;
-          min-width: 180px;
+          min-height: 44px;
         }
         
         .actionItem:hover {
           background-color: rgba(0, 0, 0, 0.05);
+        }
+        
+        .actionItem:active {
+          background-color: rgba(0, 0, 0, 0.1);
         }
         
         .actionIcon {
@@ -307,14 +397,14 @@ const ProjectActions: React.FC = () => {
         .modalContent {
           width: 100%;
           max-width: 400px;
-          border-radius: 8px;
+          border-radius: 16px;
           border: 1px solid;
-          padding: 16px;
+          padding: 24px;
           animation: zoomIn 0.2s ease;
         }
         
         @keyframes zoomIn {
-          from { opacity: 0; transform: scale(0.95); }
+          from { opacity: 0; transform: scale(0.98); }
           to { opacity: 1; transform: scale(1); }
         }
         
@@ -327,7 +417,8 @@ const ProjectActions: React.FC = () => {
         
         .modalTitle {
           margin: 0;
-          font-size: 18px;
+          font-size: 20px;
+          font-weight: 600;
         }
         
         .closeButton {
@@ -337,16 +428,25 @@ const ProjectActions: React.FC = () => {
           display: flex;
           align-items: center;
           justify-content: center;
+          width: 32px;
+          height: 32px;
+          border-radius: 16px;
+          transition: background-color 0.2s;
+        }
+        
+        .closeButton:hover {
+          background-color: rgba(0, 0, 0, 0.05);
         }
         
         .input {
           width: 100%;
-          height: 40px;
+          height: 50px;
           border: 1px solid;
-          border-radius: 4px;
-          padding: 0 12px;
-          margin-bottom: 20px;
-          font-size: 14px;
+          border-radius: 12px;
+          padding: 0 16px;
+          margin-bottom: 24px;
+          font-size: 16px;
+          font-family: inherit;
         }
         
         .input:focus {
@@ -357,17 +457,18 @@ const ProjectActions: React.FC = () => {
         .modalActions {
           display: flex;
           justify-content: flex-end;
-          gap: 12px;
         }
         
         .button {
-          padding: 8px 16px;
-          border-radius: 4px;
+          padding: 12px 20px;
+          border-radius: 12px;
           font-size: 14px;
-          font-weight: 500;
+          font-weight: 600;
           cursor: pointer;
-          min-height: 36px;
+          min-height: 44px;
           transition: opacity 0.2s ease;
+          min-width: 100px;
+          font-family: inherit;
         }
         
         .cancelButton {
@@ -386,11 +487,23 @@ const ProjectActions: React.FC = () => {
         
         @media (max-width: 768px) {
           .button {
-            min-height: 44px;
+            min-height: 48px; /* Larger touch targets on mobile */
             padding: 10px 16px;
           }
+          
+          .modalContent {
+            max-width: 340px;
+          }
         }
-      `}</style>
+        
+        /* Fix for notched phones */
+        @supports (padding: max(0px)) {
+          .container {
+            bottom: max(16px, env(safe-area-inset-bottom, 16px));
+            right: max(16px, env(safe-area-inset-right, 16px));
+          }
+        }
+      `}} />
     </>
   );
 };

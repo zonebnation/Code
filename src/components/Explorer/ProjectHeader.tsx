@@ -94,7 +94,7 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({ openBrowser }) => {
               >
                 {currentProject.name}
               </span>
-              {currentProject.isPublic && (
+              {currentProject.is_public && (
                 <span 
                   className={styles.publicBadge}
                   style={{ 
@@ -136,7 +136,7 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({ openBrowser }) => {
                   className={styles.menuItem}
                   onClick={handleTogglePublic}
                 >
-                  {currentProject.isPublic ? (
+                  {currentProject.is_public ? (
                     <>
                       <Lock size={16} color={colors.text} className={styles.menuItemIcon} />
                       <span style={{ color: colors.text }}>Make Private</span>

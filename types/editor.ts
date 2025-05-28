@@ -14,6 +14,8 @@ export type Project = {
   files: File[];
   createdAt: string;
   filesystemDirectory?: string;
+  user_id: string;
+  is_public: boolean;
   isPublic?: boolean;
   isExternal?: boolean;
   description?: string;
@@ -46,3 +48,31 @@ export type FileSearchResult = {
   filePath: string;
   matches: SearchMatch[];
 };
+
+export type Breakpoint = {
+  line: number;
+  fileId: string;
+};
+
+export enum FileTreeActionType {
+  CREATE_FILE = 'CREATE_FILE',
+  CREATE_DIRECTORY = 'CREATE_DIRECTORY',
+  RENAME = 'RENAME',
+  DELETE = 'DELETE',
+  MOVE = 'MOVE'
+}
+
+export enum FileType {
+  FILE = 'file',
+  DIRECTORY = 'directory'
+}
+
+export interface FileOperation {
+  type: FileTreeActionType;
+  fileId?: string;
+  path?: string;
+  name?: string;
+  fileType?: FileType;
+  targetPath?: string;
+  content?: string;
+}

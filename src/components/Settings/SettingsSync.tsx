@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
-import { useSettings } from '../../context/SettingsContext';
 import SettingsSyncService, { SyncStatus, SyncResult } from '../../services/SettingsSyncService';
 import { 
   Cloud, 
@@ -12,7 +11,6 @@ import {
   Clock, 
   Download, 
   Upload, 
-  Settings, 
   HelpCircle,
   Trash
 } from 'lucide-react';
@@ -20,19 +18,6 @@ import {
 const SettingsSync: React.FC = () => {
   const { colors } = useTheme();
   const { user } = useAuth();
-  const { 
-    editorSettings, 
-    colorTheme, 
-    isDark,
-    updateFontSize,
-    updateTabSize,
-    updateUseTabs,
-    updateWordWrap,
-    updateAutoSave,
-    updateMinimapEnabled,
-    updateColorTheme
-  } = useSettings();
-  
   const [syncEnabled, setSyncEnabled] = useState(false);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
   const [lastSyncTime, setLastSyncTime] = useState<number | null>(null);
@@ -133,22 +118,8 @@ const SettingsSync: React.FC = () => {
       setShowConfirmation(false);
       setSyncError(null);
       
-      // Get key bindings
-      const customBindings: Record<string, any> = {};
-      const allBindings = keyBindingsService.getAllBindings();
-      
-      allBindings.forEach(binding => {
-        if (JSON.stringify(binding.currentKeyCombo) !== JSON.stringify(binding.defaultKeyCombo)) {
-          customBindings[binding.id] = binding.currentKeyCombo;
-        }
-      });
-      
       // Prepare settings object
       const settings = {
-        editorSettings,
-        colorTheme,
-        isDark,
-        keyBindings: customBindings,
         syncEnabled: true,
         lastSyncTime: Date.now()
       };
@@ -162,7 +133,7 @@ const SettingsSync: React.FC = () => {
       } else {
         setSyncError(result.error || 'Failed to upload settings');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error uploading settings:', error);
       setSyncError('Failed to upload settings to server');
     }
@@ -184,36 +155,15 @@ const SettingsSync: React.FC = () => {
         return;
       }
       
-      // Apply settings to local state
-      if (remoteSettings.editorSettings) {
-        updateFontSize(remoteSettings.editorSettings.fontSize);
-        updateTabSize(remoteSettings.editorSettings.tabSize);
-        updateUseTabs(remoteSettings.editorSettings.useTabs);
-        updateWordWrap(remoteSettings.editorSettings.wordWrap);
-        updateAutoSave(remoteSettings.editorSettings.autoSave);
-        updateMinimapEnabled(remoteSettings.editorSettings.minimapEnabled);
-      }
-      
-      if (remoteSettings.colorTheme) {
-        updateColorTheme(remoteSettings.colorTheme);
-      }
-      
-      // Apply key bindings
-      if (remoteSettings.keyBindings) {
-        Object.entries(remoteSettings.keyBindings).forEach(([id, keyCombo]) => {
-          keyBindingsService.updateBinding(id, keyCombo);
-        });
-      }
-      
       // Update last sync time
       setLastSyncTime(remoteSettings.lastSyncTime || Date.now());
       setSyncError(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error downloading settings:', error);
       setSyncError('Failed to download settings from server');
     }
   };
-
+  
   // Delete all remote settings
   const deleteRemoteSettings = async () => {
     if (!user) return;
@@ -231,7 +181,7 @@ const SettingsSync: React.FC = () => {
       } else {
         setSyncError('Failed to delete settings');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting settings:', error);
       setSyncError('Failed to delete settings from server');
     }
@@ -284,12 +234,12 @@ const SettingsSync: React.FC = () => {
         />
         <div>Loading sync settings...</div>
         
-        <style jsx>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
           }
-        `}</style>
+        `}} />
       </div>
     );
   }
@@ -689,17 +639,6 @@ const SettingsSync: React.FC = () => {
       )}
     </div>
   );
-};
-
-// For now, we'll define a simple mock keyBindingsService for this component
-// In a real implementation, you would import this from your actual KeyBindingsService
-const keyBindingsService = {
-  getAllBindings: () => {
-    return [];
-  },
-  updateBinding: (id: string, keyCombo: any) => {
-    return true;
-  }
 };
 
 export default SettingsSync;

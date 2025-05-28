@@ -14,7 +14,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
     return (
       <div className="loading-container">
         <div className="loading-spinner"></div>
-        <style jsx>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           .loading-container {
             display: flex;
             justify-content: center;
@@ -33,7 +33,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
           @keyframes spin {
             to { transform: rotate(360deg); }
           }
-        `}</style>
+        `}} />
       </div>
     );
   }

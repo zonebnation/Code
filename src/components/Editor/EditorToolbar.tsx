@@ -3,7 +3,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { useProject } from '../../context/ProjectContext';
 import { 
   Save, 
-  Share, 
+  Share2, 
   Settings, 
   Code, 
   Type, 
@@ -13,7 +13,8 @@ import {
   Users,
   MessageSquare,
   AlignLeft, // Adding the format icon
-  Download
+  Download,
+  Zap
 } from 'lucide-react';
 import ShareButton from '../Sharing/ShareButton';
 import styles from './EditorToolbar.module.css';
@@ -26,7 +27,9 @@ interface EditorToolbarProps {
   onToggleChat?: () => void;
   isChatActive?: boolean;
   isCollaborative?: boolean;
-  onFormat?: () => void; // Add format handler prop
+  onFormat?: () => void;
+  onToggleAI?: () => void;
+  isAIActive?: boolean;
 }
 
 const EditorToolbar: React.FC<EditorToolbarProps> = ({ 
@@ -37,7 +40,9 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
   onToggleChat,
   isChatActive = false,
   isCollaborative = false,
-  onFormat // Format handler
+  onFormat,
+  onToggleAI,
+  isAIActive = true
 }) => {
   const { colors } = useTheme();
   const { currentProject, currentFile, hasUnsavedChanges, saveFile } = useProject();
@@ -100,6 +105,25 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
         >
           <Type size={18} color={colors.textSecondary} />
         </button>
+        
+        {onToggleAI && (
+          <button
+            className={styles.actionButton}
+            title={isAIActive ? "Disable AI Suggestions" : "Enable AI Suggestions"}
+            onClick={onToggleAI}
+            style={{
+              backgroundColor: isAIActive ? `${colors.primary}20` : 'transparent',
+              borderColor: isAIActive ? colors.primary : 'transparent',
+              borderWidth: '1px',
+              borderStyle: 'solid'
+            }}
+          >
+            <Zap
+              size={18}
+              color={isAIActive ? colors.primary : colors.textSecondary}
+            />
+          </button>
+        )}
         
         {/* Add Format Button */}
         <button 
@@ -169,7 +193,15 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
 
         {currentFile && (
           <ShareButton 
-            file={currentFile}
+            // Pass the file as a simple FileTab to prevent type errors
+            // ShareButton accepts either Project or File
+            file={{
+              id: currentFile.id,
+              name: currentFile.name,
+              path: currentFile.path,
+              type: 'file',
+              content: currentFile.content
+            }}
             size={18}
             className={styles.actionButton}
           />

@@ -1,349 +1,329 @@
-import { supabase } from '../lib/supabase-init';
-import { Project } from '../types/editor';
+import { supabase } from './supabase';
+import { Project, File } from '../types/editor';
+
+interface SyncProjectResponse {
+  project: {
+    id: string;
+    name: string;
+    description: string;
+    user_id: string;
+    is_public: boolean;
+    created_at: string;
+    updated_at: string;
+    files: Array<{
+      id: string;
+      project_id: string;
+      name: string;
+      path: string;
+      content: string | null;
+      type: string;
+      parent_id: string | null;
+      created_at: string;
+      updated_at: string;
+    }>;
+  };
+  message: string;
+}
 
 class ProjectService {
+  /**
+   * Fetches all projects for the current user
+   */
   async getUserProjects(): Promise<Project[]> {
     const { data, error } = await supabase
       .from('projects')
-      .select(`
-        id,
-        name,
-        description,
-        user_id,
-        is_public,
-        created_at,
-        updated_at,
-        collaborators_can_invite,
-        project_files (*)
-      `)
+      .select('*')
       .order('updated_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching projects:', error);
-      throw error;
-    }
+    if (error) throw error;
 
-    // Transform the database response to our Project type
-    return (data || []).map(project => this.transformDbProjectToProject(project));
+    return data.map(this.mapDatabaseProjectToModel);
   }
 
-  async getProject(projectId: string): Promise<Project> {
+  /**
+   * Fetches a specific project by ID
+   */
+  async getProjectById(id: string): Promise<Project> {
     const { data, error } = await supabase
       .from('projects')
       .select(`
-        id,
-        name,
-        description,
-        user_id,
-        is_public,
-        created_at,
-        updated_at,
-        collaborators_can_invite,
-        project_files (*)
+        *,
+        files:project_files(*)
       `)
-      .eq('id', projectId)
+      .eq('id', id)
       .single();
 
-    if (error) {
-      console.error(`Error fetching project ${projectId}:`, error);
-      throw error;
-    }
-
-    return this.transformDbProjectToProject(data);
+    if (error) throw error;
+    
+    return this.mapDatabaseProjectToModel(data);
   }
 
-  async createProject(name: string, description: string = ''): Promise<Project> {
-    // Create the project record
-    const { data: projectData, error: projectError } = await supabase
+  /**
+   * Syncs a local project with the server
+   */
+  async syncProject(project: Project): Promise<Project> {
+    try {
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-project`;
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({
+          project: {
+            id: project.id,
+            name: project.name,
+            description: project.description || '',
+            is_public: project.is_public || false,
+          },
+          files: project.files.map(file => ({
+            id: file.id,
+            name: file.name,
+            path: file.path,
+            content: file.content || '',
+            type: file.type,
+            parent_id: this.getParentIdFromProject(file, project),
+          })),
+        }),
+      });
+
+      const result: SyncProjectResponse = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to sync project');
+      }
+      
+      return this.mapDatabaseProjectToModel(result.project);
+    } catch (error) {
+      console.error('Error syncing project:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Creates a new project
+   */
+  async createProject(name: string, isPublic: boolean = false): Promise<Project> {
+    const { data, error } = await supabase
       .from('projects')
-      .insert([
-        { name, description }
-      ])
+      .insert({
+        name,
+        is_public: isPublic,
+      })
       .select()
       .single();
 
-    if (projectError) {
-      console.error('Error creating project:', projectError);
-      throw projectError;
-    }
+    if (error) throw error;
 
-    // Create default files for the project
-    const defaultFiles = [
-      {
-        project_id: projectData.id,
-        name: 'index.js',
-        path: '/index.js',
-        content: '// Welcome to Code Canvas!\nconsole.log("Hello, world!");',
-        type: 'file'
-      },
-      {
-        project_id: projectData.id,
-        name: 'style.css',
-        path: '/style.css',
-        content: '/* Styles for your project */\nbody {\n  font-family: sans-serif;\n  margin: 0;\n  padding: 20px;\n}',
-        type: 'file'
-      },
-      {
-        project_id: projectData.id,
-        name: 'src',
-        path: '/src',
-        type: 'directory'
-      }
-    ];
-
-    const { data: filesData, error: filesError } = await supabase
-      .from('project_files')
-      .insert(defaultFiles)
-      .select();
-
-    if (filesError) {
-      console.error('Error creating project files:', filesError);
-      throw filesError;
-    }
-
-    // Create child files in the src directory
-    const srcFile = filesData.find(f => f.path === '/src');
-    if (srcFile) {
-      const srcChildren = [
-        {
-          project_id: projectData.id,
-          name: 'app.js',
-          path: '/src/app.js',
-          content: '// App logic goes here\nfunction init() {\n  console.log("App initialized");\n}\n\ninit();',
-          type: 'file',
-          parent_id: srcFile.id
-        },
-        {
-          project_id: projectData.id,
-          name: 'utils.js',
-          path: '/src/utils.js',
-          content: '// Utility functions\nexport function formatDate(date) {\n  return new Date(date).toLocaleDateString();\n}',
-          type: 'file',
-          parent_id: srcFile.id
-        }
-      ];
-
-      const { data: childrenData, error: childrenError } = await supabase
-        .from('project_files')
-        .insert(srcChildren)
-        .select();
-
-      if (childrenError) {
-        console.error('Error creating child files:', childrenError);
-        throw childrenError;
-      }
-
-      // Update src directory with children
-      const { error: updateError } = await supabase
-        .from('project_files')
-        .update({ 
-          children: childrenData.map(child => child.id) 
-        })
-        .eq('id', srcFile.id);
-
-      if (updateError) {
-        console.error('Error updating src directory:', updateError);
-        throw updateError;
-      }
-    }
-
-    // Fetch the complete project with all files
-    return this.getProject(projectData.id);
+    return this.mapDatabaseProjectToModel(data);
   }
 
-  async updateProject(projectId: string, updates: any): Promise<void> {
+  /**
+   * Updates a project's metadata
+   */
+  async updateProject(id: string, updates: { name?: string; description?: string; is_public?: boolean }): Promise<void> {
     const { error } = await supabase
       .from('projects')
       .update(updates)
-      .eq('id', projectId);
+      .eq('id', id);
 
-    if (error) {
-      console.error(`Error updating project ${projectId}:`, error);
-      throw error;
-    }
+    if (error) throw error;
   }
 
-  async updateFile(fileId: string, content: string): Promise<void> {
+  /**
+   * Deletes a project
+   */
+  async deleteProject(id: string): Promise<void> {
     const { error } = await supabase
-      .from('project_files')
-      .update({ content })
-      .eq('id', fileId);
-
-    if (error) {
-      console.error(`Error updating file ${fileId}:`, error);
-      throw error;
-    }
-  }
-
-  async createFile(projectId: string, name: string, path: string, type: 'file' | 'directory', parentId?: string, content: string = ''): Promise<any> {
-    const fileData = {
-      project_id: projectId,
-      name,
-      path,
-      type,
-      parent_id: parentId,
-      content: type === 'file' ? content : null,
-      children: type === 'directory' ? [] : null
-    };
-
-    const { data, error } = await supabase
-      .from('project_files')
-      .insert([fileData])
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error creating file:', error);
-      throw error;
-    }
-
-    // If this file has a parent, update the parent's children array
-    if (parentId) {
-      const { data: parentData, error: parentError } = await supabase
-        .from('project_files')
-        .select('children')
-        .eq('id', parentId)
-        .single();
-
-      if (parentError) {
-        console.error('Error fetching parent:', parentError);
-        throw parentError;
-      }
-
-      const children = parentData.children || [];
-      children.push(data.id);
-
-      const { error: updateError } = await supabase
-        .from('project_files')
-        .update({ children })
-        .eq('id', parentId);
-
-      if (updateError) {
-        console.error('Error updating parent children:', updateError);
-        throw updateError;
-      }
-    }
-
-    return data;
-  }
-
-  async deleteFile(fileId: string): Promise<void> {
-    // Get the file to check if it has a parent
-    const { data: fileData, error: fileError } = await supabase
-      .from('project_files')
-      .select('parent_id')
-      .eq('id', fileId)
-      .single();
-
-    if (fileError) {
-      console.error(`Error fetching file ${fileId}:`, fileError);
-      throw fileError;
-    }
-
-    // If file has a parent, update the parent's children array
-    if (fileData.parent_id) {
-      const { data: parentData, error: parentError } = await supabase
-        .from('project_files')
-        .select('children')
-        .eq('id', fileData.parent_id)
-        .single();
-
-      if (parentError) {
-        console.error('Error fetching parent:', parentError);
-        throw parentError;
-      }
-
-      const children = parentData.children || [];
-      const updatedChildren = children.filter(id => id !== fileId);
-
-      const { error: updateError } = await supabase
-        .from('project_files')
-        .update({ children: updatedChildren })
-        .eq('id', fileData.parent_id);
-
-      if (updateError) {
-        console.error('Error updating parent children:', updateError);
-        throw updateError;
-      }
-    }
-
-    // Delete the file
-    const { error } = await supabase
-      .from('project_files')
+      .from('projects')
       .delete()
-      .eq('id', fileId);
+      .eq('id', id);
 
-    if (error) {
-      console.error(`Error deleting file ${fileId}:`, error);
-      throw error;
-    }
+    if (error) throw error;
   }
 
-  async renameFile(fileId: string, newName: string): Promise<void> {
-    // Get the current file info
-    const { data: fileData, error: fileError } = await supabase
-      .from('project_files')
-      .select('path, name')
-      .eq('id', fileId)
+  /**
+   * Adds a collaborator to a project
+   */
+  async addCollaborator(projectId: string, userId: string, permission: 'read' | 'write' | 'admin'): Promise<void> {
+    const { error } = await supabase
+      .from('project_collaborators')
+      .insert({
+        project_id: projectId,
+        user_id: userId,
+        permission,
+      });
+
+    if (error) throw error;
+  }
+
+  /**
+   * Removes a collaborator from a project
+   */
+  async removeCollaborator(projectId: string, userId: string): Promise<void> {
+    const { error } = await supabase
+      .from('project_collaborators')
+      .delete()
+      .eq('project_id', projectId)
+      .eq('user_id', userId);
+
+    if (error) throw error;
+  }
+
+  /**
+   * Gets all collaborators for a project
+   */
+  async getProjectCollaborators(projectId: string): Promise<Array<{ id: string; username: string; avatar_url: string; permission: string; }>> {
+    const { data, error } = await supabase
+      .from('project_collaborators')
+      .select(`
+        id,
+        permission,
+        profiles:user_id (id, username, avatar_url)
+      `)
+      .eq('project_id', projectId);
+
+    if (error) throw error;
+
+    return data.map((collab: any) => ({
+      id: collab.profiles.id,
+      username: collab.profiles.username,
+      avatar_url: collab.profiles.avatar_url,
+      permission: collab.permission,
+    }));
+  }
+
+  /**
+   * Sends an invitation to collaborate on a project
+   */
+  async inviteCollaborator(projectId: string, email: string, permission: 'read' | 'write' | 'admin'): Promise<void> {
+    // First, get the user ID from the email
+    const { data: userData, error: userError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('email', email)
       .single();
 
-    if (fileError) {
-      console.error(`Error fetching file ${fileId}:`, fileError);
-      throw fileError;
+    if (userError) {
+      throw new Error('User not found with that email');
     }
 
-    // Calculate the new path by replacing the file name in the path
-    const oldPath = fileData.path;
-    const pathParts = oldPath.split('/');
-    pathParts[pathParts.length - 1] = newName;
-    const newPath = pathParts.join('/');
-
-    // Update the file
     const { error } = await supabase
-      .from('project_files')
-      .update({ name: newName, path: newPath })
-      .eq('id', fileId);
+      .from('collaboration_invites')
+      .insert({
+        project_id: projectId,
+        invitee_id: userData.id,
+        inviter_id: (await supabase.auth.getUser()).data.user?.id,
+        permission,
+      });
 
-    if (error) {
-      console.error(`Error renaming file ${fileId}:`, error);
-      throw error;
-    }
+    if (error) throw error;
   }
 
-  private transformDbProjectToProject(dbProject: any): Project {
-    // Convert DB project files to our file structure
-    const files = this.buildFileTree(dbProject.project_files || []);
+  /**
+   * Responds to a collaboration invitation
+   */
+  async respondToInvitation(inviteId: string, accept: boolean): Promise<void> {
+    const status = accept ? 'accepted' : 'rejected';
 
-    return {
-      id: dbProject.id,
-      name: dbProject.name,
-      description: dbProject.description || '',
-      path: `/projects/${dbProject.id}`,
-      files,
-      createdAt: dbProject.created_at,
-      updatedAt: dbProject.updated_at,
-      userId: dbProject.user_id,
-      isPublic: dbProject.is_public,
-      collaboratorsCanInvite: dbProject.collaborators_can_invite
-    };
+    const { error } = await supabase
+      .from('collaboration_invites')
+      .update({ status })
+      .eq('id', inviteId);
+
+    if (error) throw error;
   }
 
-  private buildFileTree(dbFiles: any[]): any[] {
-    // Create a map of files by ID for quick lookup
-    const fileMap = new Map();
-    dbFiles.forEach(file => {
-      fileMap.set(file.id, {
+  /**
+   * Gets all pending invitations for the current user
+   */
+  async getPendingInvitations(): Promise<Array<{
+    id: string;
+    project_id: string;
+    project_name: string;
+    inviter_name: string | null;
+    permission: string;
+    created_at: string;
+  }>> {
+    const { data, error } = await supabase
+      .from('collaboration_invites')
+      .select(`
+        id,
+        project_id,
+        permission,
+        created_at,
+        projects:project_id (name),
+        profiles:inviter_id (id, username, avatar_url)
+      `)
+      .eq('status', 'pending');
+
+    if (error) throw error;
+
+    return data.map((invite: any) => ({
+      id: invite.id,
+      project_id: invite.project_id,
+      project_name: invite.projects.name,
+      inviter_name: invite.profiles.username,
+      permission: invite.permission,
+      created_at: invite.created_at,
+    }));
+  }
+
+  /**
+   * Maps a database project to our application model
+   */
+  private mapDatabaseProjectToModel(dbProject: any): Project {
+    let files: File[] = [];
+    
+    if (dbProject.files) {
+      files = dbProject.files.map((file: any) => ({
         id: file.id,
         name: file.name,
         type: file.type,
         path: file.path,
-        content: file.content || '',
-        children: file.children || [],
-      });
-    });
-
-    // Convert the map to an array
-    return Array.from(fileMap.values());
+        content: file.content,
+        children: this.getChildrenIds(file.id, dbProject.files),
+      }));
+    }
+    
+    return {
+      id: dbProject.id,
+      name: dbProject.name,
+      description: dbProject.description,
+      path: `/projects/${dbProject.id}`,
+      files: files,
+      createdAt: dbProject.created_at,
+      user_id: dbProject.user_id,
+      is_public: dbProject.is_public,
+    };
+  }
+  
+  /**
+   * Find children of a directory
+   */
+  private getChildrenIds(parentId: string, files: any[]): string[] {
+    return files
+      .filter(file => file.parent_id === parentId)
+      .map(file => file.id);
+  }
+  
+  /**
+   * Get parent ID of a file from the project structure
+   */
+  private getParentIdFromProject(file: File, project: Project): string | null {
+    if (!file.path || file.path === '/') return null;
+    
+    // Extract parent path
+    const pathParts = file.path.split('/');
+    pathParts.pop(); // Remove filename
+    
+    const parentPath = pathParts.join('/') || '/';
+    
+    // Find parent file by path
+    const parentFile = project.files.find(f => f.path === parentPath);
+    return parentFile?.id || null;
   }
 }
 

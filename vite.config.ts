@@ -8,13 +8,14 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
+      'monaco-editor': resolve(__dirname, 'node_modules/monaco-editor')
     },
   },
   server: {
     host: true, // Needed for mobile testing
   },
   optimizeDeps: {
-    include: ['yjs', 'y-monaco', 'y-websocket'], // Explicitly include these packages
+    include: ['yjs', 'y-websocket'], // Removed monaco-editor from here
     exclude: ['@capacitor/core', '@capacitor/filesystem', 'events'],
     esbuildOptions: {
       // Node.js global to browser globalThis
@@ -24,8 +25,17 @@ export default defineConfig({
     }
   },
   build: {
+    commonjsOptions: {
+      transformMixedEsModules: true,
+    },
     rollupOptions: {
-      external: ['@capacitor/core', '@capacitor/filesystem', 'events']
+      external: ['@capacitor/core', '@capacitor/filesystem', 'events'],
+      output: {
+        manualChunks: {
+          'monaco-editor': ['monaco-editor'],
+          'yjs-editor': ['yjs', 'y-websocket'],
+        }
+      }
     }
   }
 });

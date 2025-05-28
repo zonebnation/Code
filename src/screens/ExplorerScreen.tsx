@@ -9,12 +9,14 @@ import EmptyState from '../components/shared/EmptyState';
 import FileBrowserModal from '../components/FileBrowser/FileBrowserModal';
 import NewFileDialog, { FileType } from '../components/Explorer/NewFileDialog';
 import NewProjectModal from '../components/Explorer/NewProjectModal';
-import { FileText, Folder } from 'lucide-react';
+import { FileText, Folder, Plus } from 'lucide-react';
 import keyBindingsService from '../services/KeyBindingsService';
 import styles from './ExplorerScreen.module.css';
+import { useNavigate } from 'react-router-dom';
 
 const ExplorerScreen = () => {
   const { colors } = useTheme();
+  const navigate = useNavigate();
   const { 
     projects, 
     currentProject, 
@@ -22,13 +24,13 @@ const ExplorerScreen = () => {
     createNewProject,
     createNewFile,
     createNewFolder,
-    openProject,
-    recentProjects
+    openProject
   } = useProject();
   
   const [fileBrowserOpen, setFileBrowserOpen] = useState(false);
   const [newFileDialogOpen, setNewFileDialogOpen] = useState(false);
   const [newFileType, setNewFileType] = useState<FileType>('file');
+  const [newFileParentId, setNewFileParentId] = useState<string | undefined>(undefined);
   const [newProjectModalOpen, setNewProjectModalOpen] = useState(false);
   const [useEnhancedFileTree, setUseEnhancedFileTree] = useState(true);
 
@@ -91,25 +93,109 @@ const ExplorerScreen = () => {
     }
   };
 
-  // Fix: Ensure recentProjects is an array before spreading it
-  const combinedProjects = Array.isArray(recentProjects) ? [...recentProjects] : [];
-  
-  // Add projects that aren't in recent projects
-  projects.forEach(project => {
-    if (!combinedProjects.some(p => p.id === project.id)) {
-      combinedProjects.push(project);
+  const handleQuickCreateFile = async () => {
+    try {
+      // Create a new file named "index.js" if no project exists, otherwise create "newfile.js"
+      const fileName = currentProject ? "newfile.js" : "index.js";
+      
+      // If no project exists, create one first
+      if (!currentProject) {
+        await createNewProject("My Project");
+      }
+      
+      // Create the file
+      await createNewFile(fileName);
+      
+      // Navigate to editor
+      navigate('/editor');
+    } catch (error) {
+      console.error('Error creating file:', error);
+      alert('Failed to create file. Please try again.');
     }
-  });
+  };
+
+  // Combine projects for display
+  const combinedProjects = [...projects];
 
   if (!currentProject && combinedProjects.length === 0) {
     return (
-      <EmptyState
-        icon="FolderPlus"
-        title="No Projects"
-        message="Create your first project or open one from your device to get started."
-        actionText="Create Project"
-        onAction={() => setNewProjectModalOpen(true)}
-      />
+      <div className="welcome-screen" style={{ 
+        backgroundColor: colors.background,
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px'
+      }}>
+        <div style={{ 
+          backgroundColor: colors.surface,
+          borderRadius: '12px',
+          padding: '32px',
+          maxWidth: '500px',
+          width: '100%',
+          textAlign: 'center',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+        }}>
+          <h1 style={{ color: colors.text, marginBottom: '16px', fontSize: '24px' }}>
+            Welcome to Code Canvas!
+          </h1>
+          
+          <p style={{ color: colors.textSecondary, marginBottom: '32px', fontSize: '16px' }}>
+            Start coding right away or create a new project to organize your work
+          </p>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <button
+              onClick={handleQuickCreateFile}
+              style={{
+                backgroundColor: colors.primary,
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '16px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '12px',
+                cursor: 'pointer',
+                boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+                transition: 'transform 0.2s, background-color 0.2s'
+              }}
+            >
+              <Plus size={20} />
+              Start Coding Now
+            </button>
+            
+            <button
+              onClick={() => setNewProjectModalOpen(true)}
+              style={{
+                backgroundColor: colors.surface,
+                color: colors.text,
+                border: `1px solid ${colors.border}`,
+                borderRadius: '8px',
+                padding: '16px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '12px',
+                cursor: 'pointer'
+              }}
+            >
+              <Folder size={20} />
+              Create New Project
+            </button>
+          </div>
+          
+          <p style={{ color: colors.textSecondary, marginTop: '32px', fontSize: '14px' }}>
+            Your work automatically saves as you type
+          </p>
+        </div>
+      </div>
     );
   }
 
@@ -229,6 +315,7 @@ const ExplorerScreen = () => {
       <NewFileDialog
         isOpen={newFileDialogOpen}
         fileType={newFileType}
+        parentPath={newFileParentId}
         onClose={() => setNewFileDialogOpen(false)}
         onCreateFile={handleCreateFile}
       />

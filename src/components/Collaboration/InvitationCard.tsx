@@ -14,16 +14,17 @@ import {
 } from 'lucide-react';
 import styles from './InvitationCard.module.css';
 
-type Invitation = {
+export interface Invitation {
   id: string;
-  project_id: string;
-  project_name: string;
-  inviter_id: string;
-  inviter_username: string | null;
-  inviter_avatar_url: string | null;
+  projectId: string;
+  projectName: string;
+  inviterId: string;
+  inviterName: string | null;
   permission: 'read' | 'write' | 'admin';
-  created_at: string;
-};
+  createdAt: string;
+  inviterUsername?: string | null;
+  inviterAvatar?: string | null;
+}
 
 interface InvitationCardProps {
   invitation: Invitation;
@@ -94,7 +95,7 @@ const InvitationCard: React.FC<InvitationCardProps> = ({
     }
   };
   
-  // Format date
+  // Format date for display
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString(undefined, {
@@ -141,32 +142,32 @@ const InvitationCard: React.FC<InvitationCardProps> = ({
       {/* Header with project name */}
       <div className={styles.header}>
         <h3 style={{ color: colors.text }}>
-          {invitation.project_name}
+          {invitation.projectName}
         </h3>
         <div 
           className={styles.date}
           style={{ color: colors.textSecondary }}
         >
           <Clock size={12} />
-          <span>{formatDate(invitation.created_at)}</span>
+          <span>{formatDate(invitation.createdAt)}</span>
         </div>
       </div>
       
       {/* Inviter info */}
       <div className={styles.inviter}>
         <div 
-          className={styles.avatar}
+          className={styles.inviterAvatar}
           style={{ backgroundColor: `${colors.primary}20` }}
         >
-          {invitation.inviter_avatar_url ? (
-            <img src={invitation.inviter_avatar_url} alt={invitation.inviter_username || 'User'} />
+          {invitation.inviterAvatar ? (
+            <img src={invitation.inviterAvatar} alt={invitation.inviterName || 'User'} />
           ) : (
             <User size={16} color={colors.primary} />
           )}
         </div>
         <div className={styles.inviterInfo}>
           <span style={{ color: colors.text }}>
-            {invitation.inviter_username || 'Unknown user'} invited you
+            {invitation.inviterName || 'Unknown user'} invited you
           </span>
           <div 
             className={styles.permission}

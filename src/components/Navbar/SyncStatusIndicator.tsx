@@ -149,7 +149,7 @@ const SyncStatusIndicator: React.FC = () => {
         </div>
       )}
       
-      <style jsx>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
@@ -160,7 +160,7 @@ const SyncStatusIndicator: React.FC = () => {
           80% { opacity: 1; }
           100% { opacity: 0; }
         }
-      `}</style>
+      `}} />
     </div>
   );
 };

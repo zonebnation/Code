@@ -1,0 +1,257 @@
+.container {
+  height: 100%;
+  overflow: auto;
+  max-width: 100vw;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.backButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 50%;
+  touch-action: manipulation;
+}
+
+.backButton:active {
+  background-color: rgba(0, 0, 0, 0.05);
+  transform: scale(0.95);
+}
+
+.headerTitle {
+  font-size: 18px;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.content {
+  padding: 16px 0;
+  width: 100%;
+}
+
+.section {
+  margin-bottom: 24px;
+}
+
+.sectionTitle {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  margin-left: 16px;
+  margin-bottom: 8px;
+}
+
+.sectionContent {
+  border-radius: 8px;
+  margin: 0 16px;
+  overflow: hidden;
+}
+
+.settingItem {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  cursor: pointer;
+  min-height: 64px;
+  touch-action: manipulation;
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.settingItem:active {
+  opacity: 0.7;
+}
+
+.settingIcon {
+  margin-right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+}
+
+.settingContent {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  min-width: 0; /* Allow content to shrink */
+}
+
+.settingTitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.settingValueContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.settingValue {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  margin-right: 4px;
+  white-space: nowrap;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  min-width: 36px;
+  min-height: 20px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 10px;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  border-radius: 50%;
+  transition: .4s;
+}
+
+input:checked + .slider:before {
+  transform: translateX(16px);
+}
+
+.footer {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin: 8px 0 24px;
+  padding: 0 16px;
+}
+
+.footerText {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  text-align: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .header {
+    padding: 12px;
+  }
+  
+  .headerTitle {
+    font-size: 16px;
+  }
+  
+  .sectionTitle {
+    margin-left: 12px;
+    font-size: 13px;
+  }
+  
+  .sectionContent {
+    margin: 0 12px;
+  }
+  
+  .settingItem {
+    padding: 16px;
+  }
+  
+  .settingIcon {
+    margin-right: 12px;
+  }
+  
+  .settingTitle {
+    font-size: 15px;
+  }
+  
+  .settingValue {
+    font-size: 13px;
+  }
+}
+
+/* Small mobile screens */
+@media (max-width: 375px) {
+  .header {
+    padding: 10px;
+  }
+  
+  .headerTitle {
+    font-size: 15px;
+  }
+  
+  .sectionTitle {
+    margin-left: 10px;
+    font-size: 12px;
+  }
+  
+  .sectionContent {
+    margin: 0 10px;
+  }
+  
+  .settingItem {
+    padding: 14px 10px;
+  }
+  
+  .settingIcon {
+    margin-right: 10px;
+    min-width: 20px;
+  }
+  
+  .settingTitle {
+    font-size: 14px;
+  }
+}
+
+/* Fixes for iPhone notches */
+@supports (padding: max(0px)) {
+  .container {
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+  }
+  
+  .footer {
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+}

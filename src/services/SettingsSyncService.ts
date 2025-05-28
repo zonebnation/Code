@@ -10,6 +10,7 @@ export interface UserSettings {
   keyBindings?: Record<string, KeyCombo>;
   syncEnabled?: boolean;
   lastSyncTime?: number;
+  [key: string]: any; // <-- Add this line
 }
 
 // Result of a sync operation

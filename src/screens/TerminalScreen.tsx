@@ -53,7 +53,7 @@ const TerminalScreen = () => {
   const [consoleMessages, setConsoleMessages] = useState<ConsoleMessage[]>([
     { 
       id: '1', 
-      type: 'system', 
+      type: 'info', 
       content: 'Console ready. Run your code to see output here.',
       timestamp: Date.now() 
     }
@@ -204,11 +204,25 @@ const TerminalScreen = () => {
       setShowConsole(true);
       
       // Add a system message indicating execution
-      addConsoleMessage('system', `Executing ${file.name}...`);
+      const systemMessage: ConsoleMessage = {
+        id: Date.now().toString() + Math.random().toString(36).slice(2, 9),
+        type: 'info',
+        content: `Executing ${file.name}...`,
+        timestamp: Date.now()
+      };
+      setConsoleMessages(prev => [...prev, systemMessage]);
       
       try {
         sandboxedFn();
-        addConsoleMessage('system', `Execution of ${file.name} completed`);
+        
+        // Add completion message
+        const completionMessage: ConsoleMessage = {
+          id: Date.now().toString() + Math.random().toString(36).slice(2, 9),
+          type: 'info',
+          content: `Execution of ${file.name} completed`,
+          timestamp: Date.now()
+        };
+        setConsoleMessages(prev => [...prev, completionMessage]);
       } catch (error: any) {
         addConsoleMessage('error', `Runtime error: ${error.message}`);
         // Return the error to also show in terminal
@@ -387,7 +401,13 @@ const TerminalScreen = () => {
       
       if (file && file.type === 'file') {
         // This would require integration with a proper debugger
-        addConsoleMessage('system', `Starting debug session for ${file.name}...`);
+        const systemMessage: ConsoleMessage = {
+          id: Date.now().toString() + Math.random().toString(36).slice(2, 9),
+          type: 'info',
+          content: `Starting debug session for ${file.name}...`,
+          timestamp: Date.now()
+        };
+        setConsoleMessages(prev => [...prev, systemMessage]);
         setShowConsole(true);
         // Here you'd integrate with your actual debugger
         return;
@@ -397,27 +417,69 @@ const TerminalScreen = () => {
       switch (command) {
         case 'run':
           if (currentFile && currentFile.language === 'javascript') {
-            addConsoleMessage('system', `Starting debug session for ${currentFile.name}...`);
+            const systemMessage: ConsoleMessage = {
+              id: Date.now().toString() + Math.random().toString(36).slice(2, 9),
+              type: 'info',
+              content: `Starting debug session for ${currentFile.name}...`,
+              timestamp: Date.now()
+            };
+            setConsoleMessages(prev => [...prev, systemMessage]);
             setShowConsole(true);
           } else {
-            addConsoleMessage('error', 'No JavaScript file is currently open for debugging');
+            const errorMessage: ConsoleMessage = {
+              id: Date.now().toString() + Math.random().toString(36).slice(2, 9),
+              type: 'error',
+              content: 'No JavaScript file is currently open for debugging',
+              timestamp: Date.now()
+            };
+            setConsoleMessages(prev => [...prev, errorMessage]);
           }
           break;
         case 'stop':
-          addConsoleMessage('system', 'Debugging session stopped');
+          const stopMessage: ConsoleMessage = {
+            id: Date.now().toString() + Math.random().toString(36).slice(2, 9),
+            type: 'info',
+            content: 'Debugging session stopped',
+            timestamp: Date.now()
+          };
+          setConsoleMessages(prev => [...prev, stopMessage]);
           break;
         case 'step':
-          addConsoleMessage('system', 'Stepped to next line');
+          const stepMessage: ConsoleMessage = {
+            id: Date.now().toString() + Math.random().toString(36).slice(2, 9),
+            type: 'info',
+            content: 'Stepped to next line',
+            timestamp: Date.now()
+          };
+          setConsoleMessages(prev => [...prev, stepMessage]);
           break;
         case 'pause':
-          addConsoleMessage('system', 'Execution paused');
+          const pauseMessage: ConsoleMessage = {
+            id: Date.now().toString() + Math.random().toString(36).slice(2, 9),
+            type: 'info',
+            content: 'Execution paused',
+            timestamp: Date.now()
+          };
+          setConsoleMessages(prev => [...prev, pauseMessage]);
           break;
         default:
-          addConsoleMessage('error', `Unknown debug command: ${command}`);
+          const errorMessage: ConsoleMessage = {
+            id: Date.now().toString() + Math.random().toString(36).slice(2, 9),
+            type: 'error',
+            content: `Unknown debug command: ${command}`,
+            timestamp: Date.now()
+          };
+          setConsoleMessages(prev => [...prev, errorMessage]);
           break;
       }
     } else {
-      addConsoleMessage('error', 'Please specify a file to debug or a debug command');
+      const errorMessage: ConsoleMessage = {
+        id: Date.now().toString() + Math.random().toString(36).slice(2, 9),
+        type: 'error',
+        content: 'Please specify a file to debug or a debug command',
+        timestamp: Date.now()
+      };
+      setConsoleMessages(prev => [...prev, errorMessage]);
     }
   };
 
@@ -495,7 +557,7 @@ const TerminalScreen = () => {
   const handleClearConsole = () => {
     setConsoleMessages([{
       id: Date.now().toString(),
-      type: 'system',
+      type: 'info',
       content: 'Console cleared',
       timestamp: Date.now()
     }]);
@@ -566,7 +628,13 @@ const TerminalScreen = () => {
     }
     
     if (fileToRun) {
-      addConsoleMessage('system', `Running ${fileToRun.name}...`);
+      const consoleMessage: ConsoleMessage = {
+        id: Date.now().toString() + Math.random().toString(36).slice(2, 9),
+        type: 'info',
+        content: `Running ${fileToRun.name}...`,
+        timestamp: Date.now()
+      };
+      setConsoleMessages(prev => [...prev, consoleMessage]);
       
       // Override console methods to capture output
       const originalConsole = {
@@ -613,7 +681,13 @@ const TerminalScreen = () => {
         setShowConsole(true);
         const sandboxedFn = new Function(fileToRun.content);
         sandboxedFn();
-        addConsoleMessage('system', `Execution of ${fileToRun.name} completed successfully`);
+        const completionMessage: ConsoleMessage = {
+          id: Date.now().toString() + Math.random().toString(36).slice(2, 9),
+          type: 'info',
+          content: `Execution of ${fileToRun.name} completed successfully`,
+          timestamp: Date.now()
+        };
+        setConsoleMessages(prev => [...prev, completionMessage]);
       } catch (error: any) {
         addConsoleMessage('error', `Runtime error: ${error.message}`);
         
@@ -648,16 +722,28 @@ const TerminalScreen = () => {
 
   const handleToggleDebug = () => {
     if (currentFile && currentFile.language === 'javascript') {
-      addConsoleMessage('system', `Starting debug session for ${currentFile.name}...`);
+      const debugMessage: ConsoleMessage = {
+        id: Date.now().toString() + Math.random().toString(36).slice(2, 9),
+        type: 'info',
+        content: `Starting debug session for ${currentFile.name}...`,
+        timestamp: Date.now()
+      };
+      setConsoleMessages(prev => [...prev, debugMessage]);
       setShowConsole(true);
       // In a real implementation, this would connect to your debugger
     } else {
-      addConsoleMessage('error', 'No JavaScript file is currently open for debugging');
+      const errorMessage: ConsoleMessage = {
+        id: Date.now().toString() + Math.random().toString(36).slice(2, 9),
+        type: 'error',
+        content: 'No JavaScript file is currently open for debugging',
+        timestamp: Date.now()
+      };
+      setConsoleMessages(prev => [...prev, errorMessage]);
       setShowConsole(true);
     }
   };
 
-  const addConsoleMessage = (type: 'log' | 'error' | 'warn' | 'info' | 'system', content: string) => {
+  const addConsoleMessage = (type: 'log' | 'error' | 'warn' | 'info', content: string) => {
     const message: ConsoleMessage = {
       id: Date.now().toString() + Math.random().toString(36).slice(2, 9),
       type,

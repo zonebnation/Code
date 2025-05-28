@@ -1,15 +1,15 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
-import { Code, FolderTree, Settings, Command as CommandIcon, Search as SearchIcon, Video as VideoIcon, GitBranch, Users, Keyboard, Share2 } from 'lucide-react';
-import CommandPalette from '../CommandPalette/CommandPalette';
+import { Code, FolderTree, Settings, Command as CommandIcon, Search as SearchIcon, Video as VideoIcon, GitBranch, Users, Keyboard, Share2, Plus } from 'lucide-react';
+import CommandPalette from '../../components/CommandPalette/CommandPalette';
 import CommandService from '../../services/CommandService';
 import { useProject } from '../../context/ProjectContext';
 import { useAuth } from '../../context/AuthContext';
-import GlobalSearch from '../Search/GlobalSearch';
-import OfflineIndicator from '../Offline/OfflineIndicator';
-import KeyboardShortcutsHelp from '../Help/KeyboardShortcutsHelp';
-import SyncStatusIndicator from '../Navbar/SyncStatusIndicator';
+import GlobalSearch from '../../components/Search/GlobalSearch';
+import OfflineIndicator from '../../components/Offline/OfflineIndicator';
+import KeyboardShortcutsHelp from '../../components/Help/KeyboardShortcutsHelp';
+import SyncStatusIndicator from '../../components/Navbar/SyncStatusIndicator';
 import keyBindingsService from '../../services/KeyBindingsService';
 import styles from './Layout.module.css';
 
@@ -26,12 +26,14 @@ const Layout = () => {
     setCurrentFile,
     isOffline,
     toggleOfflineMode,
-    syncOfflineChanges
+    syncOfflineChanges,
+    createNewProject
   } = useProject();
   const { user } = useAuth();
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
   const navigate = useNavigate();
   
@@ -39,12 +41,55 @@ const Layout = () => {
   useEffect(() => {
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
+      setWindowHeight(window.innerHeight);
     };
     
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Register key bindings with the KeyBindingsService
+  useEffect(() => {
+    // Global shortcuts
+    const commandPaletteUnregister = keyBindingsService.registerHandler(
+      'global.commandPalette', 
+      () => setCommandPaletteOpen(true)
+    );
+    
+    const globalSearchUnregister = keyBindingsService.registerHandler(
+      'global.search', 
+      () => setSearchOpen(true)
+    );
+    
+    const toggleThemeUnregister = keyBindingsService.registerHandler(
+      'global.toggleTheme', 
+      toggleTheme
+    );
+    
+    const showKeyboardHelpUnregister = keyBindingsService.registerHandler(
+      'global.shortcuts', 
+      () => setShowKeyboardHelp(true)
+    );
+    
+    const quickCreateUnregister = keyBindingsService.registerHandler(
+      'global.quickCreate',
+      handleQuickCreate
+    );
+    
+    // Set current scope to global
+    keyBindingsService.setScope('global');
+    
+    // Cleanup function
+    return () => {
+      commandPaletteUnregister();
+      globalSearchUnregister();
+      toggleThemeUnregister();
+      showKeyboardHelpUnregister();
+      quickCreateUnregister();
+    };
+  }, [toggleTheme]);
   
+  // Register default commands
   useEffect(() => {
     // Register default commands
     CommandService.registerCommands([
@@ -57,7 +102,7 @@ const Layout = () => {
           if (currentProject) {
             createNewFile('untitled.js');
           } else {
-            alert('Please open a project first');
+            handleQuickCreate();
           }
         }
       },
@@ -253,44 +298,17 @@ const Layout = () => {
         title: 'Help: Keyboard Shortcuts',
         category: 'Help',
         action: () => setShowKeyboardHelp(true)
+      },
+      
+      // Quick create file
+      {
+        id: 'file.quickCreate',
+        title: 'File: Quick Create and Open File',
+        category: 'File',
+        action: handleQuickCreate
       }
     ]);
   }, [currentProject, isDark, currentFile, openFiles, isOffline]);
-  
-  // Register keyboard shortcuts with the KeyBindingsService
-  useEffect(() => {
-    // Global shortcuts
-    const commandPaletteUnregister = keyBindingsService.registerHandler(
-      'global.commandPalette', 
-      () => setCommandPaletteOpen(true)
-    );
-    
-    const globalSearchUnregister = keyBindingsService.registerHandler(
-      'global.search', 
-      () => setSearchOpen(true)
-    );
-    
-    const toggleThemeUnregister = keyBindingsService.registerHandler(
-      'global.toggleTheme', 
-      toggleTheme
-    );
-    
-    const showKeyboardHelpUnregister = keyBindingsService.registerHandler(
-      'global.shortcuts', 
-      () => setShowKeyboardHelp(true)
-    );
-    
-    // Set current scope to global
-    keyBindingsService.setScope('global');
-    
-    // Cleanup function
-    return () => {
-      commandPaletteUnregister();
-      globalSearchUnregister();
-      toggleThemeUnregister();
-      showKeyboardHelpUnregister();
-    };
-  }, [toggleTheme]);
   
   const handleFileSelect = (fileId: string, lineNumber: number) => {
     // Check if file is already open
@@ -304,17 +322,46 @@ const Layout = () => {
     
     navigate('/editor');
   };
-  
-  const navLinkStyle = ({ isActive }: { isActive: boolean }) => ({
-    color: isActive ? colors.primary : colors.textSecondary,
-  });
 
-  // Get label for nav item based on screen size
-  const getNavLabel = (text: string) => {
-    if (windowWidth < 360) { // Very small screens, show no text
-      return null;
+  // Quick create function - creates a new file and opens it in editor
+  function handleQuickCreate() {
+    try {
+      // Create a new file named "index.js" if no project exists, otherwise create "newfile.js"
+      const fileName = currentProject ? "newfile.js" : "index.js";
+      
+      // If no project exists, create one first
+      if (!currentProject) {
+        createNewProject("My Project");
+      }
+      
+      // Create the file
+      createNewFile(fileName);
+      
+      // Navigate to editor
+      navigate('/editor');
+    } catch (error) {
+      console.error('Error creating file:', error);
+      alert('Failed to create file. Please try again.');
     }
-    return <span className={styles.tabLabel}>{text}</span>;
+  }
+
+  // Determine if we're on a mobile device
+  const isMobile = windowWidth <= 767;
+  const isVerySmallScreen = windowWidth <= 374;
+  
+  // Get icon size based on screen size
+  const getIconSize = () => {
+    if (isVerySmallScreen) return 20;
+    if (isMobile) return 22;
+    return 24;
+  };
+  
+  // Should we show labels on the navbar?
+  const showLabels = windowWidth > 320;
+  
+  // Adjust active tab style based on screen size
+  const getTabClassName = ({ isActive }: { isActive: boolean }) => {
+    return `${styles.tabItem} ${isActive ? styles.active : ''}`;
   };
 
   return (
@@ -329,7 +376,7 @@ const Layout = () => {
           title="Command Palette (Ctrl+Shift+P)"
           aria-label="Open command palette"
         >
-          <CommandIcon size={windowWidth < 768 ? 18 : 20} color={colors.textSecondary} />
+          <CommandIcon size={isMobile ? 18 : 20} color={colors.textSecondary} />
         </button>
       </div>
       
@@ -340,14 +387,14 @@ const Layout = () => {
           title="Search in Files (Ctrl+Shift+F)"
           aria-label="Search in files"
         >
-          <SearchIcon size={windowWidth < 768 ? 18 : 20} color={colors.textSecondary} />
+          <SearchIcon size={isMobile ? 18 : 20} color={colors.textSecondary} />
         </button>
       </div>
       
       {/* Show sync status indicator */}
       <div style={{ 
         position: 'fixed', 
-        top: '12px', 
+        top: 'max(12px, env(safe-area-inset-top, 12px))', 
         right: '100px', 
         zIndex: 900
       }}>
@@ -367,56 +414,97 @@ const Layout = () => {
         )}
       </main>
       
+      {/* Quick create button */}
+      <div style={{ 
+        position: 'fixed', 
+        bottom: 'max(80px, calc(80px + env(safe-area-inset-bottom, 0px)))', 
+        right: 'max(16px, env(safe-area-inset-right, 16px))', 
+        zIndex: 900
+      }}>
+        <button
+          onClick={handleQuickCreate}
+          style={{
+            width: '56px',
+            height: '56px',
+            borderRadius: '50%',
+            backgroundColor: colors.primary,
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 4px 10px rgba(0, 0, 0, 0.3)',
+            border: 'none',
+            cursor: 'pointer',
+            touchAction: 'manipulation'
+          }}
+          aria-label="Create new file"
+          title="Create new file"
+        >
+          <Plus size={24} color="white" />
+        </button>
+      </div>
+      
       <nav 
         className={styles.tabBar}
         style={{ 
           backgroundColor: colors.surface,
           borderTopColor: colors.border
         }}
+        role="navigation"
       >
         <NavLink 
           to="/editor" 
-          className={styles.tabItem}
-          style={navLinkStyle}
+          className={getTabClassName}
+          style={({ isActive }) => ({
+            color: isActive ? colors.primary : colors.textSecondary,
+          })}
         >
-          <Code size={windowWidth < 360 ? 20 : 24} />
-          {getNavLabel('Editor')}
+          <Code size={getIconSize()} />
+          {showLabels && <span className={styles.tabLabel}>Editor</span>}
         </NavLink>
         
         <NavLink 
           to="/explorer" 
-          className={styles.tabItem}
-          style={navLinkStyle}
+          className={getTabClassName}
+          style={({ isActive }) => ({
+            color: isActive ? colors.primary : colors.textSecondary,
+          })}
         >
-          <FolderTree size={windowWidth < 360 ? 20 : 24} />
-          {getNavLabel('Explorer')}
+          <FolderTree size={getIconSize()} />
+          {showLabels && <span className={styles.tabLabel}>Explorer</span>}
         </NavLink>
         
         <NavLink 
           to="/videos" 
-          className={styles.tabItem}
-          style={navLinkStyle}
+          className={getTabClassName}
+          style={({ isActive }) => ({
+            color: isActive ? colors.primary : colors.textSecondary,
+          })}
         >
-          <VideoIcon size={windowWidth < 360 ? 20 : 24} />
-          {getNavLabel('Videos')}
+          <VideoIcon size={getIconSize()} />
+          {showLabels && <span className={styles.tabLabel}>Videos</span>}
         </NavLink>
         
         <NavLink 
           to="/collaboration" 
-          className={styles.tabItem}
-          style={navLinkStyle}
+          className={getTabClassName}
+          style={({ isActive }) => ({
+            color: isActive ? colors.primary : colors.textSecondary,
+          })}
         >
-          <Users size={windowWidth < 360 ? 20 : 24} />
-          {getNavLabel('Collab')}
+          <Users size={getIconSize()} />
+          {showLabels && <span className={styles.tabLabel}>Collab</span>}
         </NavLink>
         
         <NavLink 
           to="/settings" 
-          className={styles.tabItem}
-          style={navLinkStyle}
+          className={getTabClassName}
+          style={({ isActive }) => ({
+            color: isActive ? colors.primary : colors.textSecondary,
+          })}
         >
-          <Settings size={windowWidth < 360 ? 20 : 24} />
-          {getNavLabel('Settings')}
+          <Settings size={getIconSize()} />
+          {showLabels && <span className={styles.tabLabel}>Settings</span>}
         </NavLink>
       </nav>
       

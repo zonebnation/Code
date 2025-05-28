@@ -1,20 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
-import { supabase } from '../../lib/supabase-init';
+import { supabase } from '../../services/supabase';
 import { Bell, MailOpen } from 'lucide-react';
 import InvitationCard from './InvitationCard';
 import styles from './InvitationsList.module.css';
+import { RealtimeChannel } from '@supabase/supabase-js';
 
 type Invitation = {
   id: string;
-  project_id: string;
-  project_name: string;
-  inviter_id: string;
-  inviter_username: string | null;
-  inviter_avatar_url: string | null;
+  projectId: string;
+  projectName: string;
+  inviterId: string;
+  inviterName: string | null;
   permission: 'read' | 'write' | 'admin';
-  created_at: string;
+  createdAt: string;
+  inviterUsername?: string | null;
+  inviterAvatar?: string | null;
 };
 
 const InvitationsList: React.FC = () => {
@@ -24,7 +26,7 @@ const InvitationsList: React.FC = () => {
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const channelRef = useRef<any>(null);
+  const channelRef = useRef<RealtimeChannel | null>(null);
   
   // Fetch invitations when component mounts
   useEffect(() => {
@@ -65,15 +67,16 @@ const InvitationsList: React.FC = () => {
       if (error) throw error;
       
       // Format invitations
-      const formattedInvitations: Invitation[] = data.map(invite => ({
+      const formattedInvitations: Invitation[] = data.map((invite: any) => ({
         id: invite.id,
-        project_id: invite.project_id,
-        project_name: invite.project.name,
-        inviter_id: invite.inviter.id,
-        inviter_username: invite.inviter.username,
-        inviter_avatar_url: invite.inviter.avatar_url,
-        permission: invite.permission as 'read' | 'write' | 'admin',
-        created_at: invite.created_at
+        projectId: invite.project_id,
+        projectName: invite.project.name,
+        inviterId: invite.inviter.id,
+        inviterName: invite.inviter.username,
+        inviterUsername: invite.inviter.username,
+        inviterAvatar: invite.inviter.avatar_url,
+        permission: invite.permission,
+        createdAt: invite.created_at
       }));
       
       setInvitations(formattedInvitations);

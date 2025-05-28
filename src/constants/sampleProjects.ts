@@ -43,6 +43,8 @@ export const sampleProjects: Project[] = [
       },
     ],
     createdAt: '2023-09-15T12:00:00.000Z',
+    user_id: 'sample-user-1',
+    is_public: false
   },
   {
     id: 'project-2',
@@ -72,5 +74,7 @@ export const sampleProjects: Project[] = [
       },
     ],
     createdAt: '2023-10-05T15:30:00.000Z',
+    user_id: 'sample-user-1',
+    is_public: false
   },
 ];

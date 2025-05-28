@@ -5,6 +5,7 @@ import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
 import { MonacoBinding } from 'y-monaco';
 import { v4 as uuidv4 } from 'uuid';
+import { RealtimeChannel } from '@supabase/supabase-js';
 
 // Generate a consistent color for a user
 const getUserColor = (userId: string): string => {
@@ -37,8 +38,8 @@ const getUserColor = (userId: string): string => {
 };
 
 class CollaborationService {
-  private presenceChannels: Map<string, any> = new Map();
-  private changeChannels: Map<string, any> = new Map();
+  private presenceChannels: Map<string, RealtimeChannel> = new Map();
+  private changeChannels: Map<string, RealtimeChannel> = new Map();
   private collaborators: Map<string, PresenceData[]> = new Map();
   private cursors: Map<string, Map<string, CursorData>> = new Map();
   private onCollaboratorsChange: Map<string, (collaborators: PresenceData[]) => void> = new Map();
@@ -476,7 +477,8 @@ class CollaborationService {
       
       if (error) throw error;
       
-      return count > 0;
+      // Since count is possibly null, we need to ensure it's treated as a number
+      return count ? count > 0 : false;
     } catch (error) {
       console.error('Error checking if project is collaborative:', error);
       return false;
@@ -498,8 +500,7 @@ class CollaborationService {
       if (error) throw error;
       
       return data.map((item: any) => ({
-        id: item.id,
-        userId: item.profiles.id,
+        id: item.profiles.id,
         username: item.profiles.username,
         avatarUrl: item.profiles.avatar_url,
         permission: item.permission
@@ -533,7 +534,8 @@ class CollaborationService {
         path: `/projects/${projectData.name}`,
         files: [],
         createdAt: projectData.created_at,
-        isPublic: projectData.is_public
+        user_id: projectData.user_id,
+        is_public: projectData.is_public
       };
     } catch (error) {
       console.error('Error creating shared project:', error);
@@ -558,15 +560,16 @@ class CollaborationService {
       
       if (error) throw error;
       
-      return data.map((item: any) => ({
-        id: item.id,
-        projectId: item.project_id,
-        projectName: item.projects.name,
-        inviterId: item.profiles.id,
-        inviterName: item.profiles.username,
-        inviterAvatar: item.profiles.avatar_url,
-        permission: item.permission,
-        createdAt: item.created_at
+      return data.map((invite: any) => ({
+        id: invite.id,
+        projectId: invite.project_id,
+        projectName: invite.projects.name,
+        inviterId: invite.profiles.id,
+        inviterName: invite.profiles.username,
+        inviterUsername: invite.profiles.username,
+        inviterAvatar: invite.profiles.avatar_url,
+        permission: invite.permission,
+        createdAt: invite.created_at
       }));
     } catch (error) {
       console.error('Error fetching pending invitations:', error);

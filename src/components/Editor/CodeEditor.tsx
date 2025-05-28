@@ -15,7 +15,8 @@ import {
   Search, 
   X,
   AlignLeft,
-  AlertTriangle 
+  AlertTriangle,
+  Zap
 } from 'lucide-react';
 import { useProject } from '../../context/ProjectContext';
 import ExtendedKeyboard from './ExtendedKeyboard';
@@ -24,6 +25,7 @@ import FormattingService from '../../services/FormattingService';
 import LinterService, { LintIssue } from '../../services/LinterService';
 import LintIssuesList from './LintIssuesList';
 import keyBindingsService from '../../services/KeyBindingsService';
+import AICodeSuggestion from './AICodeSuggestion';
 import 'highlight.js/styles/github.css';
 import 'highlight.js/styles/github-dark.css';
 
@@ -42,6 +44,7 @@ interface CodeEditorProps {
   code: string;
   language: string;
   onChange: (text: string) => void;
+  readOnly?: boolean;
 }
 
 interface HistoryItem {
@@ -57,7 +60,7 @@ interface FindOptions {
 
 const MAX_HISTORY = 100;
 
-const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onChange }) => {
+const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onChange, readOnly = false }) => {
   const { colors, isDark } = useTheme();
   const { currentFile, updateFileContent, saveFile, hasUnsavedChanges } = useProject();
   const { editorSettings } = useSettings();
@@ -74,6 +77,8 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onChange }) => 
   const [lineCount, setLineCount] = useState(1);
   const [lintIssues, setLintIssues] = useState<LintIssue[]>([]);
   const [showProblems, setShowProblems] = useState(false);
+  const [showAISuggestions, setShowAISuggestions] = useState(true);
+  const [currentWordPrefix, setCurrentWordPrefix] = useState('');
   
   const editorRef = useRef<any>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -147,6 +152,11 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onChange }) => 
     if (inputRef.current) {
       selStart = inputRef.current.selectionStart || 0;
       selEnd = inputRef.current.selectionEnd || 0;
+      
+      // Detect current word for AI suggestions
+      const textBeforeCursor = text.substring(0, selStart);
+      const currentWordMatch = textBeforeCursor.match(/[a-zA-Z0-9_]+$/);
+      setCurrentWordPrefix(currentWordMatch ? currentWordMatch[0] : '');
     }
     
     // Add to history
@@ -249,7 +259,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onChange }) => 
   const handleFormat = async () => {
     if (currentFile) {
       try {
-        const formattedCode = await FormattingService.formatCode(value, language);
+        const formattedCode = await FormattingService(value, language);
         setValue(formattedCode);
         setIsSaving(true);
         if (currentFile) {
@@ -278,6 +288,15 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onChange }) => 
   const handleSelectionChange = (e: any) => {
     setSelectionStart(e.target.selectionStart);
     setSelectionEnd(e.target.selectionEnd);
+    
+    // Detect current word for AI suggestions
+    if (e.target.selectionStart === e.target.selectionEnd) {
+      const textBeforeCursor = value.substring(0, e.target.selectionStart);
+      const currentWordMatch = textBeforeCursor.match(/[a-zA-Z0-9_]+$/);
+      setCurrentWordPrefix(currentWordMatch ? currentWordMatch[0] : '');
+    } else {
+      setCurrentWordPrefix('');
+    }
   };
 
   // Insert text at current cursor position
@@ -310,29 +329,43 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onChange }) => 
     runLinter(newValue);
   };
 
-  // Jump to a specific line and column in the editor
-  const goToPosition = (line: number, column: number) => {
-    if (!inputRef.current) return;
-    
-    // Calculate position in the string based on line and column
-    const lines = value.split('\n');
-    let position = 0;
-    
-    for (let i = 0; i < line - 1 && i < lines.length; i++) {
-      position += lines[i].length + 1; // +1 for the newline character
+  // Apply an AI suggestion
+  const handleApplySuggestion = (completionText: string) => {
+    if (!currentWordPrefix) {
+      insertText(completionText);
+      return;
     }
     
-    position += Math.min(column - 1, lines[line - 1]?.length || 0);
+    // Replace the current word with the suggestion
+    const prefixStart = selectionStart - currentWordPrefix.length;
     
-    // Set cursor position
-    inputRef.current.focus();
-    inputRef.current.setSelectionRange(position, position);
+    const newValue = 
+      value.substring(0, prefixStart) + 
+      completionText + 
+      value.substring(selectionStart);
     
-    // Ensure the position is visible (scroll into view)
-    // This is a simple implementation - might not work perfectly in all cases
-    const lineHeight = parseInt(getComputedStyle(inputRef.current).lineHeight);
-    const scrollTop = (line - 1) * lineHeight - inputRef.current.clientHeight / 2;
-    inputRef.current.scrollTop = Math.max(0, scrollTop);
+    const newCursorPosition = prefixStart + completionText.length;
+    
+    setValue(newValue);
+    if (currentFile) {
+      updateFileContent(currentFile.id, newValue);
+    }
+    onChange(newValue);
+    
+    // Update selection after insertion
+    if (inputRef.current) {
+      inputRef.current.setSelectionRange(newCursorPosition, newCursorPosition);
+    }
+    
+    // Add to history
+    addToHistory(newValue, newCursorPosition, newCursorPosition);
+    
+    // Update line count and run linter
+    setLineCount(newValue.split('\n').length);
+    runLinter(newValue);
+    
+    // Reset the current word prefix
+    setCurrentWordPrefix('');
   };
 
   // Map language to highlight.js language
@@ -394,6 +427,31 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onChange }) => 
       );
     }
     return numbers;
+  };
+
+  // Jump to a specific line and column in the editor
+  const goToPosition = (line: number, column: number) => {
+    if (!inputRef.current) return;
+    
+    // Calculate position in the string based on line and column
+    const lines = value.split('\n');
+    let position = 0;
+    
+    for (let i = 0; i < line - 1 && i < lines.length; i++) {
+      position += lines[i].length + 1; // +1 for the newline character
+    }
+    
+    position += Math.min(column - 1, lines[line - 1]?.length || 0);
+    
+    // Set cursor position
+    inputRef.current.focus();
+    inputRef.current.setSelectionRange(position, position);
+    
+    // Ensure the position is visible (scroll into view)
+    // This is a simple implementation - might not work perfectly in all cases
+    const lineHeight = parseInt(getComputedStyle(inputRef.current).lineHeight);
+    const scrollTop = (line - 1) * lineHeight - inputRef.current.clientHeight / 2;
+    inputRef.current.scrollTop = Math.max(0, scrollTop);
   };
 
   // Find & Replace functionality
@@ -531,17 +589,44 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onChange }) => 
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   };
 
+  // Calculate AI suggestion position
+  const getAISuggestionPosition = () => {
+    if (!inputRef.current || !currentWordPrefix) {
+      return { top: 0, left: 0 };
+    }
+
+    const editorRect = inputRef.current.getBoundingClientRect();
+    const { selectionStart } = inputRef.current;
+    
+    // Get the current line and column
+    const textBeforeCursor = value.substring(0, selectionStart);
+    const lines = textBeforeCursor.split('\n');
+    const currentLine = lines.length;
+    const currentColumn = lines[lines.length - 1].length;
+    
+    // Approximate position calculation (can be improved)
+    const lineHeight = editorSettings.fontSize * 1.5;
+    const charWidth = editorSettings.fontSize * 0.6;
+    
+    const top = (currentLine * lineHeight) + editorSettings.fontSize;
+    const left = (currentColumn * charWidth) + 20; // +20 for line numbers column
+    
+    return { top, left };
+  };
+
   return (
     <div 
       style={{
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: colors.codeBackground
+        backgroundColor: colors.codeBackground,
+        position: 'relative'
       }}
     >
       {showFindReplace && (
         <FindReplaceBar
+          value={value}
           onFind={findText}
           onFindNext={findNext}
           onFindPrevious={findPrevious}
@@ -560,6 +645,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onChange }) => 
         zIndex: 5,
         display: 'flex',
         flexDirection: 'row',
+        gap: '4px',
       }}>
         <button
           style={{
@@ -568,12 +654,16 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onChange }) => 
             marginLeft: '4px',
             backgroundColor: colors.surface,
             border: 'none',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
           onClick={() => {
             setShowFindReplace(true);
             setShowReplace(false);
           }}
+          title="Find (Ctrl+F)"
         >
           <Search size={20} color={colors.textSecondary} />
         </button>
@@ -585,9 +675,13 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onChange }) => 
             marginLeft: '4px',
             backgroundColor: colors.surface,
             border: 'none',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
           onClick={handleFormat}
+          title="Format Document (Alt+Shift+F)"
         >
           <AlignLeft size={20} color={colors.textSecondary} />
         </button>
@@ -600,6 +694,9 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onChange }) => 
             backgroundColor: colors.surface,
             border: showProblems ? `1px solid ${colors.warning}` : 'none',
             cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             position: 'relative'
           }}
           onClick={() => setShowProblems(!showProblems)}
@@ -634,10 +731,35 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onChange }) => 
             borderRadius: '4px',
             marginLeft: '4px',
             backgroundColor: colors.surface,
+            border: showAISuggestions ? `1px solid ${colors.primary}` : 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          onClick={() => setShowAISuggestions(!showAISuggestions)}
+          title={showAISuggestions ? "Disable AI Suggestions" : "Enable AI Suggestions"}
+        >
+          <Zap 
+            size={20} 
+            color={showAISuggestions ? colors.primary : colors.textSecondary} 
+          />
+        </button>
+        
+        <button
+          style={{
+            padding: '8px',
+            borderRadius: '4px',
+            marginLeft: '4px',
+            backgroundColor: colors.surface,
             border: 'none',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
           onClick={handleSave}
+          title="Save (Ctrl+S)"
         >
           <Save 
             size={20} 
@@ -681,7 +803,8 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onChange }) => 
         
         <div style={{ 
           flex: 1,
-          overflowY: 'auto' 
+          overflowY: 'auto',
+          position: 'relative'
         }}>
           <div ref={editorRef}>
             <textarea
@@ -704,21 +827,36 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, language, onChange }) => 
               onChange={(e) => handleValueChange(e.target.value)}
               onSelect={handleSelectionChange}
               spellCheck={false}
+              readOnly={readOnly}
             />
+            
+            {/* AI Suggestions */}
+            {showAISuggestions && !readOnly && (
+              <AICodeSuggestion
+                code={value}
+                language={language}
+                position={selectionStart}
+                prefix={currentWordPrefix}
+                onSelect={handleApplySuggestion}
+                visible={!!currentWordPrefix && currentWordPrefix.length > 1}
+              />
+            )}
           </div>
         </div>
       </div>
       
-      <ExtendedKeyboard
-        onKeyPress={insertText}
-        onUndo={handleUndo}
-        onRedo={handleRedo}
-        onSave={handleSave}
-        canUndo={historyIndex > 0}
-        canRedo={historyIndex < history.length - 1}
-        tabSize={editorSettings.tabSize}
-        useTabs={editorSettings.useTabs}
-      />
+      {!readOnly && (
+        <ExtendedKeyboard
+          onKeyPress={insertText}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
+          onSave={handleSave}
+          canUndo={historyIndex > 0}
+          canRedo={historyIndex < history.length - 1}
+          tabSize={editorSettings.tabSize}
+          useTabs={editorSettings.useTabs}
+        />
+      )}
     </div>
   );
 };

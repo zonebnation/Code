@@ -18,7 +18,11 @@ import {
   WifiOff, 
   Map,
   Keyboard,
-  Cloud
+  Cloud,
+  Monitor,
+  Lightbulb,
+  Eye,
+  PanelLeft
 } from 'lucide-react';
 import FontSizePicker from '../components/Settings/FontSizePicker';
 import ThemePicker from '../components/Settings/ThemePicker';
@@ -248,10 +252,10 @@ const AboutScreen = () => {
 };
 
 const AppearanceScreen = () => {
-  const { colors, isDark, toggleTheme } = useTheme();
+  const { colors, isDark, themeName, setTheme, availableThemes } = useTheme();
   const { colorTheme, updateColorTheme } = useSettings();
   const navigate = useNavigate();
-  
+
   return (
     <div 
       className={styles.container}
@@ -279,63 +283,159 @@ const AppearanceScreen = () => {
             borderRadius: '8px',
             overflow: 'hidden'
           }}>
-            {/* Dark Theme Toggle */}
-            <div 
-              className={styles.settingItem}
-              style={{ borderBottomColor: colors.border }}
-            >
-              <div className={styles.settingIcon}>
-                {isDark ? 
-                  <Moon size={20} color={colors.primary} /> : 
-                  <Sun size={20} color={colors.primary} />
-                }
-              </div>
+            {/* Theme Selector */}
+            <div style={{ marginBottom: '16px', padding: '16px' }}>
+              <h3 style={{ 
+                color: colors.text, 
+                fontSize: '16px', 
+                marginBottom: '12px',
+                fontWeight: '500'
+              }}>
+                Theme Mode
+              </h3>
               
-              <div className={styles.settingContent}>
-                <span 
-                  className={styles.settingTitle}
-                  style={{ color: colors.text }}
-                >
-                  Dark Theme
-                </span>
-                
-                <label className={styles.switch}>
-                  <input
-                    type="checkbox"
-                    checked={isDark}
-                    onChange={toggleTheme}
-                  />
-                  <span 
-                    className={styles.slider}
-                    style={{ backgroundColor: isDark ? colors.primary : colors.border }}
-                  ></span>
-                </label>
+              <div style={{ 
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                gap: '10px'
+              }}>
+                {availableThemes.map(theme => (
+                  <button
+                    key={theme.id}
+                    onClick={() => setTheme(theme.id)}
+                    style={{ 
+                      padding: '12px',
+                      borderRadius: '8px',
+                      border: `2px solid ${theme.id === themeName ? colors.primary : colors.border}`,
+                      backgroundColor: theme.id === themeName ? `${colors.primary}10` : colors.background,
+                      color: theme.id === themeName ? colors.primary : colors.text,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '8px',
+                      minHeight: '80px',
+                      touchAction: 'manipulation',
+                      outline: 'none'
+                    }}
+                  >
+                    <div style={{
+                      width: '32px', 
+                      height: '32px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginBottom: '4px'
+                    }}>
+                      {theme.id === 'light' && <Sun size={24} />}
+                      {theme.id === 'dark' && <Moon size={24} />}
+                      {theme.id === 'highContrastDark' && <Eye size={24} />}
+                      {theme.id === 'sepia' && <PanelLeft size={24} />}
+                      {theme.id === 'midnightBlue' && <Monitor size={24} />}
+                      {theme.id === 'materialDark' && <Lightbulb size={24} />}
+                    </div>
+                    <span>{theme.name}</span>
+                  </button>
+                ))}
               </div>
             </div>
             
-            {/* Theme Picker */}
-            <div 
-              className={styles.settingItem}
-              style={{ borderBottomColor: colors.border }}
-            >
-              <div className={styles.settingIcon}>
-                <Palette size={20} color={colors.primary} />
-              </div>
+            {/* Preview */}
+            <div style={{
+              padding: '16px',
+              borderTop: `1px solid ${colors.border}`
+            }}>
+              <h3 style={{ 
+                color: colors.text, 
+                fontSize: '16px', 
+                marginBottom: '12px',
+                fontWeight: '500'
+              }}>
+                Preview
+              </h3>
               
-              <div className={styles.settingContent}>
-                <span 
-                  className={styles.settingTitle}
-                  style={{ color: colors.text }}
-                >
-                  Color Theme
-                </span>
+              <div style={{ 
+                padding: '16px', 
+                borderRadius: '8px', 
+                backgroundColor: colors.background,
+                border: `1px solid ${colors.border}`,
+                marginBottom: '16px'
+              }}>
+                <div style={{ marginBottom: '12px' }}>
+                  <h4 style={{ color: colors.primary, marginBottom: '8px' }}>Primary Color</h4>
+                  <p style={{ color: colors.text }}>This is regular text</p>
+                  <p style={{ color: colors.textSecondary }}>This is secondary text</p>
+                </div>
                 
+                <div style={{ 
+                  backgroundColor: colors.surface, 
+                  padding: '12px',
+                  borderRadius: '4px',
+                  marginBottom: '12px'
+                }}>
+                  <p style={{ color: colors.text, marginBottom: '8px' }}>Surface Background</p>
+                  <button style={{ 
+                    backgroundColor: colors.primary, 
+                    color: 'white', 
+                    border: 'none',
+                    padding: '8px 12px',
+                    borderRadius: '4px',
+                    minHeight: '44px',
+                    cursor: 'pointer'
+                  }}>
+                    Button
+                  </button>
+                </div>
+                
+                <div style={{
+                  backgroundColor: colors.codeBackground,
+                  padding: '12px',
+                  borderRadius: '4px',
+                  fontFamily: 'monospace'
+                }}>
+                  <p style={{ color: colors.codeSyntax.keyword }}>function</p>
+                  <p style={{ color: colors.codeSyntax.function }}>example() {`{`}</p>
+                  <p style={{ color: colors.codeSyntax.comment, marginLeft: '20px' }}>// This is a comment</p>
+                  <p style={{ marginLeft: '20px' }}>
+                    <span style={{ color: colors.codeSyntax.keyword }}>const</span>
+                    <span style={{ color: colors.codeSyntax.variable }}> greeting</span>
+                    <span style={{ color: colors.text }}> = </span>
+                    <span style={{ color: colors.codeSyntax.string }}>"Hello World"</span>
+                    <span style={{ color: colors.text }}>;</span>
+                  </p>
+                  <p style={{ color: colors.text }}>{`}`}</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Editor Theme */}
+            <div style={{ 
+              padding: '16px',
+              borderTop: `1px solid ${colors.border}`
+            }}>
+              <h3 style={{ 
+                color: colors.text, 
+                fontSize: '16px', 
+                marginBottom: '12px',
+                fontWeight: '500'
+              }}>
+                Editor Theme
+              </h3>
+              
+              <div style={{ marginBottom: '16px' }}>
                 <ThemePicker
                   value={colorTheme}
                   onChange={updateColorTheme}
                   isDark={isDark}
                 />
               </div>
+              
+              <p style={{ 
+                color: colors.textSecondary, 
+                fontSize: '13px', 
+              }}>
+                This setting affects the syntax highlighting theme used in the code editor.
+              </p>
             </div>
           </div>
         </div>

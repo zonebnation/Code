@@ -13,6 +13,7 @@ import {
   ChevronUp 
 } from 'lucide-react';
 import styles from './ChatPanel.module.css';
+import { RealtimeChannel } from '@supabase/supabase-js';
 
 type ChatMessage = {
   id: string;
@@ -34,6 +35,7 @@ const ChatPanel: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [chatChannel, setChatChannel] = useState<RealtimeChannel | null>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -45,7 +47,9 @@ const ChatPanel: React.FC = () => {
       setupRealtimeSubscription();
       
       return () => {
-        supabase.removeChannel('chat');
+        if (chatChannel) {
+          supabase.removeChannel(chatChannel);
+        }
       };
     }
   }, [currentProject, user]);
@@ -76,6 +80,7 @@ const ChatPanel: React.FC = () => {
           id,
           content,
           created_at,
+          user_id,
           profiles:user_id (id, username, avatar_url)
         `)
         .eq('project_id', currentProject.id)
@@ -84,14 +89,17 @@ const ChatPanel: React.FC = () => {
       
       if (error) throw error;
       
-      const formattedMessages: ChatMessage[] = data.map(msg => ({
-        id: msg.id,
-        content: msg.content,
-        user_id: msg.profiles.id,
-        username: msg.profiles.username,
-        avatar_url: msg.profiles.avatar_url,
-        created_at: msg.created_at
-      }));
+      const formattedMessages: ChatMessage[] = data.map(msg => {
+        const profiles = msg.profiles as any;
+        return {
+          id: msg.id,
+          content: msg.content,
+          user_id: msg.user_id,
+          username: profiles.username,
+          avatar_url: profiles.avatar_url,
+          created_at: msg.created_at
+        };
+      });
       
       setMessages(formattedMessages);
     } catch (error: any) {
@@ -106,7 +114,7 @@ const ChatPanel: React.FC = () => {
   const setupRealtimeSubscription = () => {
     if (!currentProject) return;
     
-    const chatChannel = supabase
+    const channel = supabase
       .channel('chat')
       .on(
         'postgres_changes',
@@ -147,6 +155,8 @@ const ChatPanel: React.FC = () => {
         }
       )
       .subscribe();
+      
+    setChatChannel(channel);
   };
   
   // Send a new message

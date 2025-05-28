@@ -1,133 +1,182 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { 
+  ThemeColors, 
+  lightColors, 
+  darkColors,
+  highContrastDarkColors,
+  sepiaColors,
+  midnightBlueColors,
+  materialDarkColors
+} from '../constants/colors';
+import { useSettings } from './SettingsContext';
 
-type ThemeColors = {
-  primary: string;
-  secondary: string;
-  accent: string;
-  success: string;
-  warning: string;
-  error: string;
-  background: string;
-  surface: string;
-  border: string;
-  text: string;
-  textSecondary: string;
-  tabBarActive: string;
-  tabBarInactive: string;
-  codeBackground: string;
-  codeSyntax: {
-    keyword: string;
-    string: string;
-    comment: string;
-    function: string;
-    variable: string;
-    number: string;
-    operator: string;
-    property: string;
-  };
-};
-
-const lightColors: ThemeColors = {
-  primary: '#0078D7',
-  secondary: '#3F9142',
-  accent: '#9C27B0',
-  success: '#22C55E',
-  warning: '#F59E0B',
-  error: '#EF4444',
-  background: '#F5F5F5',
-  surface: '#FFFFFF',
-  border: '#E2E2E2',
-  text: '#171717',
-  textSecondary: '#737373',
-  tabBarActive: '#0078D7',
-  tabBarInactive: '#737373',
-  codeBackground: '#F8F8F8',
-  codeSyntax: {
-    keyword: '#0000FF',
-    string: '#A31515',
-    comment: '#008000',
-    function: '#795E26',
-    variable: '#1F377F',
-    number: '#098658',
-    operator: '#000000',
-    property: '#0070C1',
-  },
-};
-
-const darkColors: ThemeColors = {
-  primary: '#3794FF',
-  secondary: '#4EC9B0',
-  accent: '#C586C0',
-  success: '#4ADE80',
-  warning: '#FBBF24',
-  error: '#F87171',
-  background: '#1E1E1E',
-  surface: '#252526',
-  border: '#3E3E42',
-  text: '#CCCCCC',
-  textSecondary: '#9D9D9D',
-  tabBarActive: '#3794FF',
-  tabBarInactive: '#9D9D9D',
-  codeBackground: '#1E1E1E',
-  codeSyntax: {
-    keyword: '#569CD6',
-    string: '#CE9178',
-    comment: '#6A9955',
-    function: '#DCDCAA',
-    variable: '#9CDCFE',
-    number: '#B5CEA8',
-    operator: '#D4D4D4',
-    property: '#4EC9B0',
-  },
-};
+export type ThemeName = 'light' | 'dark' | 'highContrastDark' | 'sepia' | 'midnightBlue' | 'materialDark';
 
 type ThemeContextType = {
   isDark: boolean;
   toggleTheme: () => void;
   colors: ThemeColors;
+  themeName: ThemeName;
+  setTheme: (theme: ThemeName) => void;
+  availableThemes: { id: ThemeName; name: string; isDark: boolean; }[];
 };
 
 const ThemeContext = createContext<ThemeContextType>({
   isDark: false,
   toggleTheme: () => {},
   colors: lightColors,
+  themeName: 'light',
+  setTheme: () => {},
+  availableThemes: [],
 });
 
 export const useTheme = () => useContext(ThemeContext);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Use browser preferences for initial theme
-  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const [isDark, setIsDark] = useState(prefersDark);
+  const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  
+  // Load theme from local storage if available, or use system preference
+  const storedTheme = localStorage.getItem('codeCanvas_themeName') as ThemeName | null;
+  const initialTheme = storedTheme || (systemPrefersDark ? 'dark' : 'light');
+  
+  const [themeName, setThemeName] = useState<ThemeName>(initialTheme);
+  
+  const availableThemes = [
+    { id: 'light' as ThemeName, name: 'Light', isDark: false },
+    { id: 'dark' as ThemeName, name: 'Dark', isDark: true },
+    { id: 'highContrastDark' as ThemeName, name: 'High Contrast Dark', isDark: true },
+    { id: 'sepia' as ThemeName, name: 'Sepia', isDark: false },
+    { id: 'midnightBlue' as ThemeName, name: 'Midnight Blue', isDark: true },
+    { id: 'materialDark' as ThemeName, name: 'Material Dark', isDark: true },
+  ];
 
-  // Update theme when system theme changes
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (e: MediaQueryListEvent) => {
-      setIsDark(e.matches);
-    };
-    
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
+  // Check if theme is dark
+  const isDark = availableThemes.find(t => t.id === themeName)?.isDark || false;
+
+  // Get colors for current theme
+  const getThemeColors = (): ThemeColors => {
+    switch (themeName) {
+      case 'light':
+        return lightColors;
+      case 'dark':
+        return darkColors;
+      case 'highContrastDark':
+        return highContrastDarkColors;
+      case 'sepia':
+        return sepiaColors;
+      case 'midnightBlue':
+        return midnightBlueColors;
+      case 'materialDark':
+        return materialDarkColors;
+      default:
+        return isDark ? darkColors : lightColors;
+    }
+  };
+
+  const colors = getThemeColors();
 
   // Update document when theme changes
   useEffect(() => {
-    if (isDark) {
-      document.body.classList.add('dark-theme');
-    } else {
-      document.body.classList.remove('dark-theme');
+    // Save theme preference
+    localStorage.setItem('codeCanvas_themeName', themeName);
+    
+    // Update document classes
+    document.body.classList.remove(
+      'light-theme', 
+      'dark-theme', 
+      'high-contrast-theme', 
+      'sepia-theme',
+      'midnight-theme',
+      'material-theme'
+    );
+    
+    // Apply theme class
+    switch (themeName) {
+      case 'light':
+        document.body.classList.add('light-theme');
+        break;
+      case 'dark':
+        document.body.classList.add('dark-theme');
+        break;
+      case 'highContrastDark':
+        document.body.classList.add('high-contrast-theme');
+        document.body.classList.add('dark-theme');
+        break;
+      case 'sepia':
+        document.body.classList.add('sepia-theme');
+        break;
+      case 'midnightBlue':
+        document.body.classList.add('midnight-theme');
+        document.body.classList.add('dark-theme');
+        break;
+      case 'materialDark':
+        document.body.classList.add('material-theme');
+        document.body.classList.add('dark-theme');
+        break;
     }
-  }, [isDark]);
+    
+    // Apply CSS variables for theme colors
+    Object.entries(colors).forEach(([key, value]) => {
+      if (typeof value === 'string') {
+        document.documentElement.style.setProperty(`--color-${key}`, value);
+      }
+    });
+    
+    // Update meta theme-color
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', colors.background);
+    }
+  }, [themeName, colors]);
+
+  // Listen for system theme changes
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    const handleChange = (e: MediaQueryListEvent) => {
+      // Only update if the user hasn't explicitly set a preference
+      if (!localStorage.getItem('codeCanvas_themeName')) {
+        setThemeName(e.matches ? 'dark' : 'light');
+      }
+    };
+    
+    try {
+      // Modern browsers
+      mediaQuery.addEventListener('change', handleChange);
+    } catch (err) {
+      // Safari and older browsers
+      mediaQuery.addListener(handleChange);
+    }
+    
+    return () => {
+      try {
+        // Modern browsers
+        mediaQuery.removeEventListener('change', handleChange);
+      } catch (err) {
+        // Safari and older browsers
+        mediaQuery.removeListener(handleChange);
+      }
+    };
+  }, []);
 
   const toggleTheme = () => {
-    setIsDark((prev) => !prev);
+    setThemeName(isDark ? 'light' : 'dark');
   };
 
-  const colors = isDark ? darkColors : lightColors;
+  const setTheme = (theme: ThemeName) => {
+    setThemeName(theme);
+  };
 
   return (
-    <ThemeContext.Provider value={{ isDark, toggleTheme, colors }}>
+    <ThemeContext.Provider value={{ 
+      isDark, 
+      toggleTheme, 
+      colors, 
+      themeName, 
+      setTheme,
+      availableThemes 
+    }}>
       {children}
     </ThemeContext.Provider>
   );
